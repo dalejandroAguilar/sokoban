@@ -53,7 +53,6 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private Music music;
 
     public GameScreen(MainGame mainGame) {
-
         super(mainGame);
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         textButton = new TextButton("asno", skin);
@@ -167,13 +166,13 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         undoButton.addCaptureListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                int x = world.guy.x;
+                int y = world.guy.y;
                 world.undo();
-               // guyEntity.clearActions();
-
-                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40-guyEntity.getX(),guyEntity.guy.y * 40-guyEntity.getY(),0.5f,Interpolation.swing ));
+                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40 - x* 40, guyEntity.guy.y * 40 - y* 40, 0.5f, Interpolation.swing));
                 for (BoxEntity boxEntity : boxEntityList) {
                     //   boxEntity.clearActions();
-                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40-boxEntity.getX(),boxEntity.box.y * 40-boxEntity.getY(),0.5f ,Interpolation.swing));
+                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40 - boxEntity.getX(), boxEntity.box.y * 40 - boxEntity.getY(), 0.5f, Interpolation.swing));
                     //setPosition(boxEntity.box.x * 40, boxEntity.box.y * 40);
                 }
             }
@@ -182,13 +181,13 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         redoButton.addCaptureListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                int x = world.guy.x;
+                int y = world.guy.y;
                 world.redo();
-                guyEntity.clearActions();
-
-                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40-guyEntity.getX(),guyEntity.guy.y * 40-guyEntity.getY(),0.5f,Interpolation.swing ));
+                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40 - x* 40, guyEntity.guy.y * 40 - y* 40, 0.5f, Interpolation.swing));
                 for (BoxEntity boxEntity : boxEntityList) {
                     //   boxEntity.clearActions();
-                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40-boxEntity.getX(),boxEntity.box.y * 40-boxEntity.getY(),0.5f ,Interpolation.swing));
+                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40 - boxEntity.getX(), boxEntity.box.y * 40 - boxEntity.getY(), 0.5f, Interpolation.swing));
                     //setPosition(boxEntity.box.x * 40, boxEntity.box.y * 40);
                 }
             }
@@ -197,11 +196,13 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         restartButton.addCaptureListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                int x = world.guy.x;
+                int y = world.guy.y;
                 world.restart();
-                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40-guyEntity.getX(),guyEntity.guy.y * 40-guyEntity.getY(),0.5f,Interpolation.swing ));
+                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40 - x* 40, guyEntity.guy.y * 40 - y* 40, 0.5f, Interpolation.swing));
                 for (BoxEntity boxEntity : boxEntityList) {
                     //   boxEntity.clearActions();
-                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40-boxEntity.getX(),boxEntity.box.y * 40-boxEntity.getY(),0.5f ,Interpolation.swing));
+                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40 - boxEntity.getX(), boxEntity.box.y * 40 - boxEntity.getY(), 0.5f, Interpolation.swing));
                     //setPosition(boxEntity.box.x * 40, boxEntity.box.y * 40);
                 }
             }
@@ -335,7 +336,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
 
                 if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(40, 0f, 0.3f, Interpolation.swing),
+                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(40, 0f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
                                     world.guy.push = false;
@@ -347,10 +348,10 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                     guyEntity.addAction(Actions.moveBy(-40, 0f, 0.3f));
                 if (index != -2 && index != -1)
                     boxEntityList.get(index).addAction(Actions.sequence(Actions.run(new Runnable() {
-                                                                                        public void run() {
-                                                                                            world.guy.push = true;
-                                                                                        }
-                                                                                    }),Actions.moveBy(-40, 0f, 0.3f, Interpolation.swing),
+                                public void run() {
+                                    world.guy.push = true;
+                                }
+                            }), Actions.moveBy(-40, 0f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
                                     world.guy.push = false;
@@ -364,7 +365,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 if (index != -2)
                     guyEntity.addAction(Actions.moveBy(0, -40, 0.3f));
                 if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, -40f, 0.3f, Interpolation.swing),
+                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, -40f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
                                     world.guy.push = false;
@@ -375,7 +376,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 if (index != -2)
                     guyEntity.addAction(Actions.moveBy(0, 40, 0.3f));
                 if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, 40f, 0.3f, Interpolation.swing),
+                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, 40f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
                                     world.guy.push = false;

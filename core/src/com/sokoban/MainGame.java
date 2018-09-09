@@ -15,8 +15,7 @@ public class MainGame extends Game {
 
     public MainGame(){
 	    //TODO: aquí no va nada
-
-
+        
 	}
 
 	@Override
