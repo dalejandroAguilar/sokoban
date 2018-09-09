@@ -28,9 +28,13 @@ import com.sokoban.entities.ReceptacleEntity;
 import com.sokoban.sokobanWorld.Box;
 import com.sokoban.sokobanWorld.Brick;
 import com.sokoban.sokobanWorld.Receptacle;
+import com.sokoban.sokobanWorld.Reel;
 import com.sokoban.sokobanWorld.World;
 
 import java.util.ArrayList;
+
+import static com.sokoban.Constants.*;
+
 
 public class GameScreen extends BaseScreen implements GestureDetector.GestureListener {
     static final int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3, NULL = -1, THREESHOLD_VELOCITY = 50;
@@ -166,45 +170,21 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         undoButton.addCaptureListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                int x = world.guy.x;
-                int y = world.guy.y;
-                world.undo();
-                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40 - x* 40, guyEntity.guy.y * 40 - y* 40, 0.5f, Interpolation.swing));
-                for (BoxEntity boxEntity : boxEntityList) {
-                    //   boxEntity.clearActions();
-                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40 - boxEntity.getX(), boxEntity.box.y * 40 - boxEntity.getY(), 0.5f, Interpolation.swing));
-                    //setPosition(boxEntity.box.x * 40, boxEntity.box.y * 40);
-                }
+                onAction(UNDO);
             }
         });
 
         redoButton.addCaptureListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                int x = world.guy.x;
-                int y = world.guy.y;
-                world.redo();
-                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40 - x* 40, guyEntity.guy.y * 40 - y* 40, 0.5f, Interpolation.swing));
-                for (BoxEntity boxEntity : boxEntityList) {
-                    //   boxEntity.clearActions();
-                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40 - boxEntity.getX(), boxEntity.box.y * 40 - boxEntity.getY(), 0.5f, Interpolation.swing));
-                    //setPosition(boxEntity.box.x * 40, boxEntity.box.y * 40);
-                }
+                onAction(REDO);
             }
         });
 
         restartButton.addCaptureListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                int x = world.guy.x;
-                int y = world.guy.y;
-                world.restart();
-                guyEntity.addAction(Actions.moveBy(guyEntity.guy.x * 40 - x* 40, guyEntity.guy.y * 40 - y* 40, 0.5f, Interpolation.swing));
-                for (BoxEntity boxEntity : boxEntityList) {
-                    //   boxEntity.clearActions();
-                    boxEntity.addAction(Actions.moveBy(boxEntity.box.x * 40 - boxEntity.getX(), boxEntity.box.y * 40 - boxEntity.getY(), 0.5f, Interpolation.swing));
-                    //setPosition(boxEntity.box.x * 40, boxEntity.box.y * 40);
-                }
+                onAction(RESTART);
             }
         });
 
@@ -409,5 +389,26 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     @Override
     public void pinchStop() {
 
+    }
+
+    private void onAction(int action){
+        Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle,world.groupBrick);
+
+        switch (action){
+            case UNDO:
+                world.undo();
+                break;
+            case REDO:
+                world.redo();
+                break;
+            case RESTART:
+                world.restart();
+                break;
+        }
+        guyEntity.addAction(Actions.moveBy(world.guy.x * 40 - reel.guy.x*40, world.guy.y * 40 - reel.guy.y* 40, 0.5f, Interpolation.swing));
+
+        for (int i=0; i<boxEntityList.size();i++){
+            boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * 40 - reel.groupBox.get(i).x * 40, world.groupBox.get(i).y * 40 -reel.groupBox.get(i).y * 40, 0.5f, Interpolation.swing));
+        }
     }
 }
