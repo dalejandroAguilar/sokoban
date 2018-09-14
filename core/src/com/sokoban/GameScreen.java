@@ -33,7 +33,9 @@ import com.sokoban.sokobanWorld.World;
 
 import java.util.ArrayList;
 
-import static com.sokoban.Constants.*;
+import static com.sokoban.Constants.REDO;
+import static com.sokoban.Constants.RESTART;
+import static com.sokoban.Constants.UNDO;
 
 
 public class GameScreen extends BaseScreen implements GestureDetector.GestureListener {
@@ -47,6 +49,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private TextButton textButton;
     private Stage stage;
     private Stage stage2;
+    private Stage stage3;
     private Table table;
     private World world;
     private GuyEntity guyEntity;
@@ -64,6 +67,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         textButton.setPosition(220, 250);
         stage = new Stage(new FitViewport(640, 360));
         stage2 = new Stage(new FitViewport(640, 360), stage.getBatch());
+        stage3 = new Stage(new FitViewport(640, 360), stage.getBatch());
         music = mainGame.getManager().get("music/Slider.ogg");
         intAction = new IntAction();
         intAction.setDuration(12);
@@ -71,14 +75,15 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         intAction.setEnd(12);
         intAction.setReverse(true);
         InputMultiplexer multiplexer = new InputMultiplexer();
-        String[] data = {"  BBB    ",
-                "  BRB    ",
-                "  B BBBB ",
-                "BBBXGXRB ",
-                "BR X  BBB ",
-                "BBBBXB   ",
-                "   BRB   ",
-                "   BBB   "};
+        String[] data = {"  BBB      ",
+                "   BRB     ",
+                "   B BBBB  ",
+                "BBBBXGXRB  ",
+                "B  RX  BBB ",
+                "B      BBB ",
+                "BBBBBXBB   ",
+                "    BRB    ",
+                "    BBB    "};
         world = new World(data);
         batch = new SpriteBatch();
         Texture[][] guyTextures = new Texture[2][4];
@@ -310,56 +315,95 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
         if (Math.abs(velocityX) > Math.abs(velocityY))
             if (velocityX > 0) {
-                int index = world.enhancedMove(RIGHT);
+                final int index = world.enhancedMove(RIGHT);
                 if (index != -2)
-                    guyEntity.addAction(Actions.parallel(Actions.moveBy(40, 0f, 0.3f)));
+                    guyEntity.addAction(Actions.moveBy(40, 0f, 0.3f));
 
 
-                if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(40, 0f, 0.3f),//, Interpolation.swing),
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                }
-                            })));
-            } else {
-                int index = world.enhancedMove(LEFT);
-                if (index != -2)
-                    guyEntity.addAction(Actions.moveBy(-40, 0f, 0.3f));
                 if (index != -2 && index != -1)
                     boxEntityList.get(index).addAction(Actions.sequence(Actions.run(new Runnable() {
                                 public void run() {
-                                    world.guy.push = true;
+                                    guyEntity.isOnPush = true;
                                 }
-                            }), Actions.moveBy(-40, 0f, 0.3f),//, Interpolation.swing),
+                            }),
+                            Actions.moveBy(40, 0f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
-                                    world.guy.push = false;
+                                    guyEntity.isOnPush = false;
+                                    boxEntityList.get(index).isEmbonated = boxEntityList.get(index).box.isEmbonated;
+                                }
+                            })));
+            } else {
+
+                //Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle,world.groupBrick);
+
+                final int index = world.enhancedMove(LEFT);
+                if (index != -2)
+                    guyEntity.addAction(Actions.sequence(Actions.run(new Runnable() {
+                                public void run() {
+                                    //  guyEntity.isOnPush = true;
+                                }
+                            }),
+                            Actions.moveBy(-40, 0f, 0.3f),//, Interpolation.swing),
+                            Actions.run(new Runnable() {
+                                public void run() {
+                                    //  guyEntity.isOnPush = false;
+                                }
+                            })));
+
+
+                //addAction(Actions.moveBy(-40, 0f, 0.3f));
+
+
+                if (index != -2 && index != -1)
+                    boxEntityList.get(index).addAction(Actions.sequence(Actions.run(new Runnable() {
+                                public void run() {
+                                    guyEntity.isOnPush = true;
+                                }
+                            }),
+                            Actions.moveBy(-40, 0f, 0.3f),//, Interpolation.swing),
+                            Actions.run(new Runnable() {
+                                public void run() {
+                                    guyEntity.isOnPush = false;
+                                    boxEntityList.get(index).isEmbonated = boxEntityList.get(index).box.isEmbonated;
+
                                 }
                             })));
             }
         if (Math.abs(velocityX) < Math.abs(velocityY))
             if (velocityY > 0) {
 
-                int index = world.enhancedMove(UP);
+                final int index = world.enhancedMove(UP);
                 if (index != -2)
                     guyEntity.addAction(Actions.moveBy(0, -40, 0.3f));
                 if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, -40f, 0.3f),//, Interpolation.swing),
+                    boxEntityList.get(index).addAction(Actions.sequence(Actions.run(new Runnable() {
+                                public void run() {
+                                    guyEntity.isOnPush = true;
+                                }
+                            }),
+                            Actions.moveBy(0, -40f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
-                                    world.guy.push = false;
+                                    guyEntity.isOnPush = false;
+                                    boxEntityList.get(index).isEmbonated = boxEntityList.get(index).box.isEmbonated;
                                 }
                             })));
             } else {
-                int index = world.enhancedMove(DOWN);
+                final int index = world.enhancedMove(DOWN);
                 if (index != -2)
                     guyEntity.addAction(Actions.moveBy(0, 40, 0.3f));
                 if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, 40f, 0.3f),//, Interpolation.swing),
+                    boxEntityList.get(index).addAction(Actions.sequence(Actions.run(new Runnable() {
+                                public void run() {
+                                    guyEntity.isOnPush = true;
+                                }
+                            }),
+                            Actions.moveBy(0, 40f, 0.3f),//, Interpolation.swing),
                             Actions.run(new Runnable() {
                                 public void run() {
-                                    world.guy.push = false;
+                                    guyEntity.isOnPush = false;
+                                    boxEntityList.get(index).isEmbonated = boxEntityList.get(index).box.isEmbonated;
                                 }
                             })));
             }
@@ -391,12 +435,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
     }
 
-    private void onAction(int action){
-        Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle,world.groupBrick);
+    private void onAction(int action) {
+        Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle, world.groupBrick);
+        Interpolation interpolation;
 
-        switch (action){
+        switch (action) {
             case UNDO:
                 world.undo();
+                interpolation = Interpolation.swing;
                 break;
             case REDO:
                 world.redo();
@@ -405,10 +451,11 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 world.restart();
                 break;
         }
-        guyEntity.addAction(Actions.moveBy(world.guy.x * 40 - reel.guy.x*40, world.guy.y * 40 - reel.guy.y* 40, 0.5f, Interpolation.swing));
+        guyEntity.addAction(Actions.moveBy(world.guy.x * 40 - reel.guy.x * 40, world.guy.y * 40 - reel.guy.y * 40, 0.5f, Interpolation.swing));
 
-        for (int i=0; i<boxEntityList.size();i++){
-            boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * 40 - reel.groupBox.get(i).x * 40, world.groupBox.get(i).y * 40 -reel.groupBox.get(i).y * 40, 0.5f, Interpolation.swing));
+        for (int i = 0; i < boxEntityList.size(); i++) {
+            boxEntityList.get(i).isEmbonated = boxEntityList.get(i).box.isEmbonated;
+            boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * 40 - reel.groupBox.get(i).x * 40, world.groupBox.get(i).y * 40 - reel.groupBox.get(i).y * 40, 0.5f, Interpolation.swing));
         }
     }
 }

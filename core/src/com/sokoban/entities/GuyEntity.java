@@ -14,12 +14,12 @@ import static com.sokoban.Constants.*;
 
 public class GuyEntity extends Actor {
     private Texture texture[][];
-
     public Guy guy;
+    public boolean isOnPush;
     public GuyEntity(Guy guy, Texture[][] texture){
         this.guy=guy;
         this.texture =texture;
-
+        isOnPush=false;
         //setDebug(true);
         //setSize(40,40);
         setBounds(guy.x*40,guy.y*40,40,40);
@@ -52,7 +52,7 @@ public class GuyEntity extends Actor {
         //System.out.println(color.a);
         //texture.
                 //setColor(color.r, color.g, color.b, color.a * parentAlpha);
-        batch.draw(texture[guy.push ? 1 : 0][guy.orientation], getX(),getY());
+        batch.draw(texture[isOnPush ? 1 : 0][guy.orientation], getX(),getY());
 
     }
 

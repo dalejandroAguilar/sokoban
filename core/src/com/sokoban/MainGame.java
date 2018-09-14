@@ -8,14 +8,14 @@ public class MainGame extends Game {
 	public GameScreen gameScreen;
     public MainMenuScreen mainMenuScreen;
 	private AssetManager manager;
-
+    final AdManager ads;
     public AssetManager getManager() {
         return manager;
     }
 
-    public MainGame(){
+    public MainGame(AdManager ads){
 	    //TODO: aquí no va nada
-        
+        this.ads=ads;
 	}
 
 	@Override
@@ -38,11 +38,15 @@ public class MainGame extends Game {
         manager.load("world/Dead_Floor.png",Texture.class);
         manager.load("music/Slider.ogg",Music.class);
         manager.finishLoading();
-        mainMenuScreen=new MainMenuScreen(this);
+        mainMenuScreen=new MainMenuScreen(this, ads );
         //gameScreen = new GameScreen(this);
 		setScreen(mainMenuScreen);
 	}
 
+    @Override
+    public void render() {
+        super.render();
+    }
 
     //@Override
 	//public void render () {
