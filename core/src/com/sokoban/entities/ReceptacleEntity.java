@@ -1,5 +1,6 @@
 package com.sokoban.entities;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,6 +15,7 @@ public class ReceptacleEntity extends Actor {
         this.recpetacle=recpetacle;
         this.texture=texture;
 
+
         setSize(40,40);
     }
 
@@ -25,8 +27,12 @@ public class ReceptacleEntity extends Actor {
         //System.out.printf("%f, %f, %f, %f\n",getColor().r,getColor().g,getColor().b,getColor().a);
         //SpriteBatch sp= new SpriteBatch();
         //batch.setColor(getColor());
+
+        Color color = getColor();
+
+        batch.setColor(color.r, color.g, color.b, color.a*parentAlpha);
         //toFront();
-        batch.draw(texture, getX(),getY());
+        batch.draw(texture, getX(),getY(),getWidth(), getHeight());
         //addAction(Actions.fadeOut(10));
 
     }

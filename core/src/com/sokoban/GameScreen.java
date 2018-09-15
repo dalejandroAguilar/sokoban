@@ -3,6 +3,7 @@ package com.sokoban;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -23,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.sokoban.entities.BoxEntity;
 import com.sokoban.entities.BrickEntity;
 import com.sokoban.entities.FloorEntity;
+import com.sokoban.entities.GirlEntity;
 import com.sokoban.entities.GuyEntity;
 import com.sokoban.entities.ReceptacleEntity;
 import com.sokoban.sokobanWorld.Box;
@@ -50,6 +52,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private Table table;
     private World world;
     private GuyEntity guyEntity;
+    private GirlEntity girlEntity;
     private ArrayList<BrickEntity> brickEntityList;
     private ArrayList<FloorEntity> floorEntityList;
     private ArrayList<BoxEntity> boxEntityList;
@@ -111,6 +114,8 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         animation = new Animation(1f / 30f, textures);
         System.out.println(world.guy.x + "," + world.guy.y);
         guyEntity = new GuyEntity(world.guy, guyTextures);
+        Texture girlTexture= mainGame.getManager().get("walk.png");
+        girlEntity = new GirlEntity(world.guy,girlTexture);
 
         brickEntityList = new ArrayList<BrickEntity>();
         boxEntityList = new ArrayList<BoxEntity>();
@@ -128,6 +133,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
             stage.addActor(floorEntity);
         }
 
+        stage.addActor(girlEntity);
 
         for (Receptacle receptacle : world.groupReceptacle)
             receptacleEntityList.add(new ReceptacleEntity(receptacle, receptacleTexture));
@@ -135,6 +141,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         for (ReceptacleEntity receptacleEntity : receptacleEntityList) {
             //receptacleEntity.addAction(Actions.forever(Actions.sequence(Actions.fadeIn(0.5f),Actions.fadeOut(0.5f))));
             // Color TRANSPARENT = new Color(1f, 1f, 1f, .5f);
+           // receptacleEntity.setColor(0,1,0,1);
             stage.addActor(receptacleEntity);
             // receptacleEntity.setColor(TRANSPARENT);
             // receptacleEntity.addAction(Actions.fadeIn(2f));
@@ -236,12 +243,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //    }
         //});
         //Gdx.input.setInputProcessor(gestureDetector);
+
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.f, 1.f, 1.f, 1.f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        girlEntity.setX(guyEntity.getX());
         stage.act(Gdx.graphics.getDeltaTime());
         //System.out.println(input.delta.x);
         // if(input.delta.x==0){
@@ -295,6 +304,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         music.stop();
     }
 
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        stage.getViewport().update(width,height);
+        stage2.getViewport().update(width,height);
+    }
+
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
         //if(Math.abs(velocityX)>THREESHOLD_VELOCITY && Math.abs(velocityY)<THREESHOLD_VELOCITY)
@@ -308,11 +325,33 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //    else
         //        world.move(DOWN);
 
+
+
         if (Math.abs(velocityX) > Math.abs(velocityY))
             if (velocityX > 0) {
                 int index = world.enhancedMove(RIGHT);
                 if (index != -2)
-                    guyEntity.addAction(Actions.parallel(Actions.moveBy(40, 0f, 0.3f)));
+                    guyEntity.addAction(Actions.sequence(
+                            Actions.run(new Runnable() {
+                                public void run() {
+                                    world.guy.push = false;
+                                    girlEntity.elapsedTime=0;
+                                    girlEntity.isWalking=true;
+                                }
+                            }),
+
+                            Actions.parallel(Actions.moveBy(40, 0f, 0.3f)),
+
+                            Actions.run(new Runnable() {
+                                public void run() {
+                                    world.guy.push = false;
+                                    girlEntity.isWalking=false;
+                                }
+                            })
+
+                    )
+
+                    );
 
 
                 if (index != -2 && index != -1)
@@ -394,6 +433,11 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private void onAction(int action){
         Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle,world.groupBrick);
 
+        //receptacleEntityList.get(0).setColor(1,0,0,1);
+        //receptacleEntityList.get(0).addAction(Actions.scaleTo(0.1f,0.1f));
+        //receptacleEntityList.get(1).setColor(1,0,0,1);
+        //receptacleEntityList.get(2).setColor(1,0,0,1);
+        receptacleEntityList.get(2).setColor(1,0,0,1);
         switch (action){
             case UNDO:
                 world.undo();
