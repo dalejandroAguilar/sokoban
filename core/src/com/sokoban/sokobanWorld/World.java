@@ -229,11 +229,11 @@ public class World {
 
     }
 
-    boolean win() {
+    public boolean win() {
         for (int i = 0; i < groupReceptacle.size(); i++)
             if (!(groupReceptacle.get(i).status))
                 return false;
-        System.out.print("wind\n");
+        System.out.print("win\n");
         return true;
     }
 

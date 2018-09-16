@@ -38,6 +38,7 @@ public class MainGame extends Game {
         manager.load("world/Dead_Floor.png",Texture.class);
         manager.load("music/Slider.ogg",Music.class);
         manager.load("walk.png",Texture.class);
+
         manager.finishLoading();
         mainMenuScreen=new MainMenuScreen(this);
         //gameScreen = new GameScreen(this);

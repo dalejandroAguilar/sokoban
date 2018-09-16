@@ -58,22 +58,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private ArrayList<BoxEntity> boxEntityList;
     private ArrayList<ReceptacleEntity> receptacleEntityList;
     private Music music;
+    private ArrayList<String[]> levels;
+    private int indexLevel;
 
-    public GameScreen(MainGame mainGame) {
-        super(mainGame);
-        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
-        textButton = new TextButton("asno", skin);
-        textButton.setSize(200, 200);
-        textButton.setPosition(220, 250);
-        stage = new Stage(new FitViewport(640, 360));
-        stage2 = new Stage(new FitViewport(640, 360), stage.getBatch());
-        music = mainGame.getManager().get("music/Slider.ogg");
-        intAction = new IntAction();
-        intAction.setDuration(12);
-        intAction.setStart(0);
-        intAction.setEnd(12);
-        intAction.setReverse(true);
-        InputMultiplexer multiplexer = new InputMultiplexer();
+    private void generateLevel(int indexLevel){
+        stage.clear();
+       // stage2.clear();
+
+
         String[] data = {"  BBB    ",
                 "  BRB    ",
                 "  B BBBB ",
@@ -82,7 +74,10 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 "BBBBXB   ",
                 "   BRB   ",
                 "   BBB   "};
-        world = new World(data);
+        //System.out.println(levels.get(2)[0]);
+
+        world = new World(levels.get(indexLevel));
+
         batch = new SpriteBatch();
         Texture[][] guyTextures = new Texture[2][4];
 
@@ -96,7 +91,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
 
         Texture[] textures = new Texture[4];
-        guyTextures[0][DOWN] = mainGame.getManager().get("guy/TOP.png");
+        guyTextures[0][DOWN] = new Texture("guy/DOWN.png");
         guyTextures[1][DOWN] = mainGame.getManager().get("guy/TOP_PUSH.png");
         guyTextures[0][RIGHT] = mainGame.getManager().get("guy/RIGHT.png");
         guyTextures[1][RIGHT] = mainGame.getManager().get("guy/RIGHT_PUSH.png");
@@ -141,7 +136,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         for (ReceptacleEntity receptacleEntity : receptacleEntityList) {
             //receptacleEntity.addAction(Actions.forever(Actions.sequence(Actions.fadeIn(0.5f),Actions.fadeOut(0.5f))));
             // Color TRANSPARENT = new Color(1f, 1f, 1f, .5f);
-           // receptacleEntity.setColor(0,1,0,1);
+            // receptacleEntity.setColor(0,1,0,1);
             stage.addActor(receptacleEntity);
             // receptacleEntity.setColor(TRANSPARENT);
             // receptacleEntity.addAction(Actions.fadeIn(2f));
@@ -161,6 +156,29 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
         for (BoxEntity boxEntity : boxEntityList)
             stage.addActor(boxEntity);
+
+
+    }
+
+    public GameScreen(MainGame mainGame) {
+        super(mainGame);
+        levels=LevelsManage.getAllFiles("levels");
+        indexLevel=0;
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        textButton = new TextButton("asno", skin);
+        textButton.setSize(200, 200);
+        textButton.setPosition(220, 250);
+        stage = new Stage(new FitViewport(640, 360));
+        stage2 = new Stage(new FitViewport(640, 360), stage.getBatch());
+        music = mainGame.getManager().get("music/Slider.ogg");
+        intAction = new IntAction();
+        intAction.setDuration(12);
+        intAction.setStart(0);
+        intAction.setEnd(12);
+        intAction.setReverse(true);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+
+        generateLevel(indexLevel);
 
         Window window = new Window("PAUSE", skin);
         //stage2.addActor(textButton);
@@ -265,6 +283,17 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //  table.drawDebug(stage.getBatch());
         batch.end();
         //System.out.println(intAction.getValue());
+        if(world.win()) {
+            if (indexLevel < levels.size() - 1) {
+                indexLevel++;
+                generateLevel(indexLevel);
+
+            } else {
+                indexLevel = 0;
+                generateLevel(indexLevel);
+            }
+        }
+
 
     }
 
@@ -437,7 +466,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //receptacleEntityList.get(0).addAction(Actions.scaleTo(0.1f,0.1f));
         //receptacleEntityList.get(1).setColor(1,0,0,1);
         //receptacleEntityList.get(2).setColor(1,0,0,1);
-        receptacleEntityList.get(2).setColor(1,0,0,1);
+      //  receptacleEntityList.get(2).setColor(1,0,0,1);
         switch (action){
             case UNDO:
                 world.undo();

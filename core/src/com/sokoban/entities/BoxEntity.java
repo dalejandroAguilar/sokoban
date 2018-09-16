@@ -18,6 +18,6 @@ public class BoxEntity extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         //setPosition(40*box.x,40*box.y);
-        batch.draw(texture[box.isEmbonated ? 1 : 0], getX(), getY());
+        batch.draw(texture[box.isEmbonated ? 1 : 0], getX(), getY(),getWidth(),getHeight());
     }
 }
