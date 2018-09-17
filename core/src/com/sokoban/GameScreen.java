@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -23,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.sokoban.entities.BoxEntity;
 import com.sokoban.entities.BrickEntity;
+import com.sokoban.entities.CoolGuyEntity;
 import com.sokoban.entities.FloorEntity;
 import com.sokoban.entities.GirlEntity;
 import com.sokoban.entities.GuyEntity;
@@ -37,8 +39,8 @@ import java.util.ArrayList;
 
 import static com.sokoban.Constants.*;
 
-
 public class GameScreen extends BaseScreen implements GestureDetector.GestureListener {
+    final int SIZE=140;
     static final int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3, NULL = -1, THREESHOLD_VELOCITY = 50;
     SpriteBatch batch;
     Animation animation;
@@ -53,18 +55,35 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private World world;
     private GuyEntity guyEntity;
     private GirlEntity girlEntity;
+    private CoolGuyEntity coolGuyEntity;
     private ArrayList<BrickEntity> brickEntityList;
     private ArrayList<FloorEntity> floorEntityList;
     private ArrayList<BoxEntity> boxEntityList;
     private ArrayList<ReceptacleEntity> receptacleEntityList;
     private Music music;
-    private ArrayList<String[]> levels;
+    //private ArrayList<String[]> levels;
     private int indexLevel;
 
-    private void generateLevel(int indexLevel){
-        stage.clear();
-       // stage2.clear();
 
+
+    public GameScreen(MainGame mainGame) {
+        super(mainGame);
+        indexLevel=0;
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        textButton = new TextButton("asno", skin);
+        textButton.setSize(200, 200);
+        textButton.setPosition(220, 250);
+        stage = new Stage(new FitViewport(1920, 1080));
+        stage2 = new Stage(new FitViewport(1920, 1080), stage.getBatch());
+        music = mainGame.getManager().get("music/Slider.ogg");
+        intAction = new IntAction();
+        intAction.setDuration(12);
+        intAction.setStart(0);
+        intAction.setEnd(12);
+        intAction.setReverse(true);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+
+        //levels=LevelsManage.getAllFiles("levels");
 
         String[] data = {"  BBB    ",
                 "  BRB    ",
@@ -76,7 +95,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 "   BBB   "};
         //System.out.println(levels.get(2)[0]);
 
-        world = new World(levels.get(indexLevel));
+        world = new World(data);
 
         batch = new SpriteBatch();
         Texture[][] guyTextures = new Texture[2][4];
@@ -111,7 +130,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         guyEntity = new GuyEntity(world.guy, guyTextures);
         Texture girlTexture= mainGame.getManager().get("walk.png");
         girlEntity = new GirlEntity(world.guy,girlTexture);
-
+        coolGuyEntity = new CoolGuyEntity(world.guy);
         brickEntityList = new ArrayList<BrickEntity>();
         boxEntityList = new ArrayList<BoxEntity>();
         receptacleEntityList = new ArrayList<ReceptacleEntity>();
@@ -130,13 +149,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
         stage.addActor(girlEntity);
 
+
         for (Receptacle receptacle : world.groupReceptacle)
             receptacleEntityList.add(new ReceptacleEntity(receptacle, receptacleTexture));
 
         for (ReceptacleEntity receptacleEntity : receptacleEntityList) {
             //receptacleEntity.addAction(Actions.forever(Actions.sequence(Actions.fadeIn(0.5f),Actions.fadeOut(0.5f))));
             // Color TRANSPARENT = new Color(1f, 1f, 1f, .5f);
-            // receptacleEntity.setColor(0,1,0,1);
+           // receptacleEntity.setColor(0,1,0,1);
             stage.addActor(receptacleEntity);
             // receptacleEntity.setColor(TRANSPARENT);
             // receptacleEntity.addAction(Actions.fadeIn(2f));
@@ -157,28 +177,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         for (BoxEntity boxEntity : boxEntityList)
             stage.addActor(boxEntity);
 
-
-    }
-
-    public GameScreen(MainGame mainGame) {
-        super(mainGame);
-        levels=LevelsManage.getAllFiles("levels");
-        indexLevel=0;
-        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
-        textButton = new TextButton("asno", skin);
-        textButton.setSize(200, 200);
-        textButton.setPosition(220, 250);
-        stage = new Stage(new FitViewport(640, 360));
-        stage2 = new Stage(new FitViewport(640, 360), stage.getBatch());
-        music = mainGame.getManager().get("music/Slider.ogg");
-        intAction = new IntAction();
-        intAction.setDuration(12);
-        intAction.setStart(0);
-        intAction.setEnd(12);
-        intAction.setReverse(true);
-        InputMultiplexer multiplexer = new InputMultiplexer();
-
-        generateLevel(indexLevel);
+        stage.addActor(coolGuyEntity);
 
         Window window = new Window("PAUSE", skin);
         //stage2.addActor(textButton);
@@ -261,7 +260,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //    }
         //});
         //Gdx.input.setInputProcessor(gestureDetector);
-
+        ((OrthographicCamera)stage.getCamera()).zoom += 0.5f;
     }
 
     @Override
@@ -272,7 +271,8 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         stage.act(Gdx.graphics.getDeltaTime());
         //System.out.println(input.delta.x);
         // if(input.delta.x==0){
-        stage.getCamera().translate(guyEntity.getX() - stage.getCamera().position.x, guyEntity.getY() - stage.getCamera().position.y, 0);
+        //stage.getCamera().translate(guyEntity.getX() - stage.getCamera().position.x, guyEntity.getY() - stage.getCamera().position.y, 0);
+        stage.getCamera().position.set(coolGuyEntity.getX(), coolGuyEntity.getY(), 0);
         // }
         elapsedTime += delta;
         batch.begin();
@@ -283,22 +283,23 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //  table.drawDebug(stage.getBatch());
         batch.end();
         //System.out.println(intAction.getValue());
-        if(world.win()) {
-            if (indexLevel < levels.size() - 1) {
-                indexLevel++;
-                generateLevel(indexLevel);
-
-            } else {
-                indexLevel = 0;
-                generateLevel(indexLevel);
-            }
-        }
+        //if(world.win()) {
+        //    if (indexLevel < levels.size() - 1) {
+        //        indexLevel++;
+        //        world = new World(levels.get(indexLevel));
+//
+        //    } else {
+        //        indexLevel = 0;
+        //        world = new World(levels.get(indexLevel));
+        //    }
+        //}
 
 
     }
 
     @Override
     public void dispose() {
+        coolGuyEntity.dispose();
         stage.dispose();
         music.dispose();
         Gdx.input.setInputProcessor(null);
@@ -357,80 +358,17 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
 
         if (Math.abs(velocityX) > Math.abs(velocityY))
-            if (velocityX > 0) {
-                int index = world.enhancedMove(RIGHT);
-                if (index != -2)
-                    guyEntity.addAction(Actions.sequence(
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                    girlEntity.elapsedTime=0;
-                                    girlEntity.isWalking=true;
-                                }
-                            }),
-
-                            Actions.parallel(Actions.moveBy(40, 0f, 0.3f)),
-
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                    girlEntity.isWalking=false;
-                                }
-                            })
-
-                    )
-
-                    );
-
-
-                if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(40, 0f, 0.3f),//, Interpolation.swing),
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                }
-                            })));
-            } else {
-                int index = world.enhancedMove(LEFT);
-                if (index != -2)
-                    guyEntity.addAction(Actions.moveBy(-40, 0f, 0.3f));
-                if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = true;
-                                }
-                            }), Actions.moveBy(-40, 0f, 0.3f),//, Interpolation.swing),
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                }
-                            })));
+            if (velocityX > 0)
+                onAction(RIGHT);
+            else {
+                onAction(LEFT);
             }
         if (Math.abs(velocityX) < Math.abs(velocityY))
-            if (velocityY > 0) {
+            if (velocityY > 0)
+                onAction(UP);
+            else
+                onAction(DOWN);
 
-                int index = world.enhancedMove(UP);
-                if (index != -2)
-                    guyEntity.addAction(Actions.moveBy(0, -40, 0.3f));
-                if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, -40f, 0.3f),//, Interpolation.swing),
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                }
-                            })));
-            } else {
-                int index = world.enhancedMove(DOWN);
-                if (index != -2)
-                    guyEntity.addAction(Actions.moveBy(0, 40, 0.3f));
-                if (index != -2 && index != -1)
-                    boxEntityList.get(index).addAction(Actions.sequence(Actions.moveBy(0, 40f, 0.3f),//, Interpolation.swing),
-                            Actions.run(new Runnable() {
-                                public void run() {
-                                    world.guy.push = false;
-                                }
-                            })));
-            }
         return true;
     }
 
@@ -459,29 +397,79 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
     }
 
-    private void onAction(int action){
-        Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle,world.groupBrick);
+    private void onAction(final int action){
+        if (action>=0 && action<10) {
+            int index = world.enhancedMove(action);
+            int amountX=0;
+            int amountY=0;
+            switch (action) {
+                case UP:
+                    amountY=-PLANK_CONSTANT;
+                    break;
+                case DOWN:
+                    amountY=PLANK_CONSTANT;
+                    break;
 
-        //receptacleEntityList.get(0).setColor(1,0,0,1);
-        //receptacleEntityList.get(0).addAction(Actions.scaleTo(0.1f,0.1f));
-        //receptacleEntityList.get(1).setColor(1,0,0,1);
-        //receptacleEntityList.get(2).setColor(1,0,0,1);
-      //  receptacleEntityList.get(2).setColor(1,0,0,1);
-        switch (action){
-            case UNDO:
-                world.undo();
-                break;
-            case REDO:
-                world.redo();
-                break;
-            case RESTART:
-                world.restart();
-                break;
+                case LEFT:
+                    amountX= - PLANK_CONSTANT;
+                    break;
+                case RIGHT:
+                    amountX= PLANK_CONSTANT;
+                    break;
+            }
+
+            coolGuyEntity.changeDirection(action);
+
+            if (index != -2)
+                coolGuyEntity.addAction(
+                        Actions.sequence(
+                                Actions.run(new Runnable() {
+                                    public void run() {
+                                        coolGuyEntity.startWalk(action);
+                                    }
+                                }),
+                                Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
+                                Actions.run(new Runnable() {
+                                    public void run() {
+                                        coolGuyEntity.stopWalk();
+                                    }
+                                })
+                        ));
+            if (index != -2 && index != -1)
+                boxEntityList.get(index).addAction(
+                        Actions.sequence(
+                                Actions.run(new Runnable() {
+                                    public void run() {
+                                        coolGuyEntity.startPush(action);
+                                    }
+                                }),
+                                Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
+                                Actions.run(new Runnable() {
+                                    public void run() {
+                                        coolGuyEntity.stopPush();
+                                    }
+                                })
+                        ));
+
         }
-        guyEntity.addAction(Actions.moveBy(world.guy.x * 40 - reel.guy.x*40, world.guy.y * 40 - reel.guy.y* 40, 0.5f, Interpolation.swing));
+        if (action>=10 && action<20) {
+            Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle, world.groupBrick);
+            switch (action) {
+                case UNDO:
+                    world.undo();
+                    break;
+                case REDO:
+                    world.redo();
+                    break;
+                case RESTART:
+                    world.restart();
+                    break;
+            }
+            guyEntity.addAction(Actions.moveBy(world.guy.x * 40 - reel.guy.x * 40, world.guy.y * 40 - reel.guy.y * 40, 0.5f, Interpolation.swing));
 
-        for (int i=0; i<boxEntityList.size();i++){
-            boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * 40 - reel.groupBox.get(i).x * 40, world.groupBox.get(i).y * 40 -reel.groupBox.get(i).y * 40, 0.5f, Interpolation.swing));
+            for (int i = 0; i < boxEntityList.size(); i++) {
+                boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * 40 - reel.groupBox.get(i).x * 40, world.groupBox.get(i).y * 40 - reel.groupBox.get(i).y * 40, 0.5f, Interpolation.swing));
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.sokoban.sokobanWorld.Box;
+import static com.sokoban.Constants.*;
+
 
 public class BoxEntity extends Actor {
     private Texture texture[];
@@ -12,12 +14,12 @@ public class BoxEntity extends Actor {
     public BoxEntity(Box box, Texture[] texture) {
         this.box = box;
         this.texture = texture;
-        setBounds(box.x * 40, box.y * 40, 40, 40);
+        setBounds(box.x * PLANK_CONSTANT, box.y * PLANK_CONSTANT, PLANK_CONSTANT, PLANK_CONSTANT);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        //setPosition(40*box.x,40*box.y);
+
         batch.draw(texture[box.isEmbonated ? 1 : 0], getX(), getY(),getWidth(),getHeight());
     }
 }

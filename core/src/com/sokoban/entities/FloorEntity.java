@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.sokoban.GameScreen;
 import com.sokoban.sokobanWorld.Brick;
 import com.sokoban.sokobanWorld.World;
+import static com.sokoban.Constants.*;
 
 public class FloorEntity extends Actor {
     private Texture texture;
@@ -18,7 +19,7 @@ public class FloorEntity extends Actor {
         this.floor=floor;
         this.texture=texture;
         this.world=world;
-        setBounds(40*floor.x,40*floor.y,40,40);
+        setBounds(PLANK_CONSTANT*floor.x,PLANK_CONSTANT*floor.y,PLANK_CONSTANT,PLANK_CONSTANT);
         setTouchable(Touchable.enabled);
         //addListener(new ClickListener() {
 //
@@ -35,7 +36,6 @@ public class FloorEntity extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        setBounds(40*floor.x,40*floor.y,40,40);
-        batch.draw(texture, getX(),getY());
+        batch.draw(texture, getX(), getY(),getWidth(),getHeight());
     }
 }
