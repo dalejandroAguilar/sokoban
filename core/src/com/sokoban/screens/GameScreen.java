@@ -1,14 +1,15 @@
-package com.sokoban;
+package com.sokoban.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
@@ -19,9 +20,12 @@ import com.badlogic.gdx.scenes.scene2d.actions.IntAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.sokoban.BaseScreen;
+import com.sokoban.LevelManager;
+import com.sokoban.LevelsManage;
+import com.sokoban.MainGame;
 import com.sokoban.entities.BoxEntity;
 import com.sokoban.entities.BrickEntity;
 import com.sokoban.entities.CoolGuyEntity;
@@ -35,13 +39,19 @@ import com.sokoban.sokobanWorld.Receptacle;
 import com.sokoban.sokobanWorld.Reel;
 import com.sokoban.sokobanWorld.World;
 
+import java.io.File;
 import java.util.ArrayList;
 
-import static com.sokoban.Constants.*;
+import static com.sokoban.Constants.CHANGE_VIEWPORT;
+import static com.sokoban.Constants.PLANK_CONSTANT;
+import static com.sokoban.Constants.REDO;
+import static com.sokoban.Constants.RESTART;
+import static com.sokoban.Constants.UNDO;
+import static com.sokoban.Constants.VIEWPORT_MAP;
 
 public class GameScreen extends BaseScreen implements GestureDetector.GestureListener {
-    final int SIZE=140;
     static final int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3, NULL = -1, THREESHOLD_VELOCITY = 50;
+    final int SIZE = 140;
     SpriteBatch batch;
     Animation animation;
     float elapsedTime;
@@ -63,13 +73,16 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private Music music;
     //private ArrayList<String[]> levels;
     private int indexLevel;
-
+    private float minX, minY, maxX, maxY;
+    private boolean viewPortMap;
 
 
     public GameScreen(MainGame mainGame) {
         super(mainGame);
-        indexLevel=0;
-        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        indexLevel = 0;
+        viewPortMap=true;
+        TextureAtlas atlas = mainGame.getManager().get("skin3/pack.atlas", TextureAtlas.class);
+        Skin skin = new Skin(Gdx.files.internal("skin3/skin.json"), atlas);
         textButton = new TextButton("asno", skin);
         textButton.setSize(200, 200);
         textButton.setPosition(220, 250);
@@ -95,7 +108,15 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 "   BBB   "};
         //System.out.println(levels.get(2)[0]);
 
-        world = new World(data);
+        String[][] levels = LevelManager.getAllFiles();
+        //System.out.println("File[0]"+files[1].name());
+        //System.out.println("File[0]"+file.readString());
+                //mainGame.getManager().get("levels/level_1.txt", FileHandle.class);
+        //String[] level = LevelsManage.fromFileToStringArray((File));
+        for(int i=0; i<levels[0].length; i++)
+            System.out.println(levels[0][i]);
+
+        world = new World(levels[3]);
 
         batch = new SpriteBatch();
         Texture[][] guyTextures = new Texture[2][4];
@@ -128,8 +149,8 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         animation = new Animation(1f / 30f, textures);
         System.out.println(world.guy.x + "," + world.guy.y);
         guyEntity = new GuyEntity(world.guy, guyTextures);
-        Texture girlTexture= mainGame.getManager().get("walk.png");
-        girlEntity = new GirlEntity(world.guy,girlTexture);
+        Texture girlTexture = mainGame.getManager().get("walk.png");
+        girlEntity = new GirlEntity(world.guy, girlTexture);
         coolGuyEntity = new CoolGuyEntity(world.guy);
         brickEntityList = new ArrayList<BrickEntity>();
         boxEntityList = new ArrayList<BoxEntity>();
@@ -156,7 +177,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         for (ReceptacleEntity receptacleEntity : receptacleEntityList) {
             //receptacleEntity.addAction(Actions.forever(Actions.sequence(Actions.fadeIn(0.5f),Actions.fadeOut(0.5f))));
             // Color TRANSPARENT = new Color(1f, 1f, 1f, .5f);
-           // receptacleEntity.setColor(0,1,0,1);
+            // receptacleEntity.setColor(0,1,0,1);
             stage.addActor(receptacleEntity);
             // receptacleEntity.setColor(TRANSPARENT);
             // receptacleEntity.addAction(Actions.fadeIn(2f));
@@ -179,17 +200,18 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
         stage.addActor(coolGuyEntity);
 
-        Window window = new Window("PAUSE", skin);
+//        Window window = new Window("PAUSE", skin);
         //stage2.addActor(textButton);
         Table table = new Table(skin);
         table.setFillParent(true);
-        table.right();
-        table.debug();
+        table.left().top();
+
+        //table.debug();
 
         TextButton undoButton = new TextButton("undo", skin);
         TextButton redoButton = new TextButton("redo", skin);
         TextButton restartButton = new TextButton("restart", skin);
-
+        TextButton viewport = new TextButton("viewport", skin);
 
         undoButton.addCaptureListener(new ChangeListener() {
             @Override
@@ -212,14 +234,20 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
             }
         });
 
+        viewport.addCaptureListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                onAction(CHANGE_VIEWPORT);
+            }
+        });
+
         table.add(undoButton);
         table.row();
-        Integer a;
         table.add(redoButton);
         table.row();
         table.add(restartButton);
-
-
+        table.row();
+        table.add(viewport);
         stage2.addActor(table);
         //stage.addActor(window);
         //stage.addListener(new ClickListener() {
@@ -260,7 +288,10 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //    }
         //});
         //Gdx.input.setInputProcessor(gestureDetector);
-        ((OrthographicCamera)stage.getCamera()).zoom += 0.5f;
+        setBounds();
+        //((OrthographicCamera)stage.getCamera()).zoom += 0.5f;
+        System.out.println(((OrthographicCamera) stage.getCamera()).zoom);
+
     }
 
     @Override
@@ -272,7 +303,8 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //System.out.println(input.delta.x);
         // if(input.delta.x==0){
         //stage.getCamera().translate(guyEntity.getX() - stage.getCamera().position.x, guyEntity.getY() - stage.getCamera().position.y, 0);
-        stage.getCamera().position.set(coolGuyEntity.getX(), coolGuyEntity.getY(), 0);
+        if(!viewPortMap)
+            stage.getCamera().position.set(coolGuyEntity.getX(), coolGuyEntity.getY(), 0);
         // }
         elapsedTime += delta;
         batch.begin();
@@ -338,8 +370,8 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        stage.getViewport().update(width,height);
-        stage2.getViewport().update(width,height);
+        stage.getViewport().update(width, height);
+        stage2.getViewport().update(width, height);
     }
 
     @Override
@@ -354,7 +386,6 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         //        world.move(UP);
         //    else
         //        world.move(DOWN);
-
 
 
         if (Math.abs(velocityX) > Math.abs(velocityY))
@@ -397,79 +428,115 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
     }
 
-    private void onAction(final int action){
-        if (action>=0 && action<10) {
-            int index = world.enhancedMove(action);
-            int amountX=0;
-            int amountY=0;
-            switch (action) {
-                case UP:
-                    amountY=-PLANK_CONSTANT;
-                    break;
-                case DOWN:
-                    amountY=PLANK_CONSTANT;
-                    break;
+    private void onAction(final int action) {
+        if (!coolGuyEntity.isOnWalking()) {
+            if (action >= 0 && action < 10) {
+                int index = world.enhancedMove(action);
+                int amountX = 0;
+                int amountY = 0;
+                switch (action) {
+                    case UP:
+                        amountY = -PLANK_CONSTANT;
+                        break;
+                    case DOWN:
+                        amountY = PLANK_CONSTANT;
+                        break;
 
-                case LEFT:
-                    amountX= - PLANK_CONSTANT;
-                    break;
-                case RIGHT:
-                    amountX= PLANK_CONSTANT;
-                    break;
+                    case LEFT:
+                        amountX = -PLANK_CONSTANT;
+                        break;
+                    case RIGHT:
+                        amountX = PLANK_CONSTANT;
+                        break;
+                }
+
+                coolGuyEntity.changeDirection(action);
+
+                if (index != -2)
+                    coolGuyEntity.addAction(
+                            Actions.sequence(
+                                    Actions.run(new Runnable() {
+                                        public void run() {
+                                            coolGuyEntity.startWalk(action);
+                                        }
+                                    }),
+                                    Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
+                                    Actions.run(new Runnable() {
+                                        public void run() {
+                                            coolGuyEntity.stopWalk();
+                                        }
+                                    })
+                            ));
+                if (index != -2 && index != -1)
+                    boxEntityList.get(index).addAction(
+                            Actions.sequence(
+                                    Actions.run(new Runnable() {
+                                        public void run() {
+                                            coolGuyEntity.startPush(action);
+                                        }
+                                    }),
+                                    Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
+                                    Actions.run(new Runnable() {
+                                        public void run() {
+                                            coolGuyEntity.stopPush();
+                                        }
+                                    })
+                            ));
+
             }
+            if (action >= 10 && action < 20) {
+                Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle, world.groupBrick);
+                switch (action) {
+                    case UNDO:
+                        world.undo();
+                        break;
+                    case REDO:
+                        world.redo();
+                        break;
+                    case RESTART:
+                        world.restart();
+                        break;
+                }
+                coolGuyEntity.addAction(Actions.moveBy(world.guy.x * PLANK_CONSTANT - reel.guy.x * PLANK_CONSTANT, world.guy.y * PLANK_CONSTANT - reel.guy.y * PLANK_CONSTANT, 0.5f, Interpolation.swing));
 
-            coolGuyEntity.changeDirection(action);
-
-            if (index != -2)
-                coolGuyEntity.addAction(
-                        Actions.sequence(
-                                Actions.run(new Runnable() {
-                                    public void run() {
-                                        coolGuyEntity.startWalk(action);
-                                    }
-                                }),
-                                Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
-                                Actions.run(new Runnable() {
-                                    public void run() {
-                                        coolGuyEntity.stopWalk();
-                                    }
-                                })
-                        ));
-            if (index != -2 && index != -1)
-                boxEntityList.get(index).addAction(
-                        Actions.sequence(
-                                Actions.run(new Runnable() {
-                                    public void run() {
-                                        coolGuyEntity.startPush(action);
-                                    }
-                                }),
-                                Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
-                                Actions.run(new Runnable() {
-                                    public void run() {
-                                        coolGuyEntity.stopPush();
-                                    }
-                                })
-                        ));
+                for (int i = 0; i < boxEntityList.size(); i++) {
+                    boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * PLANK_CONSTANT - reel.groupBox.get(i).x * PLANK_CONSTANT, world.groupBox.get(i).y * PLANK_CONSTANT - reel.groupBox.get(i).y * PLANK_CONSTANT, 0.5f, Interpolation.swing));
+                }
+            }
 
         }
-        if (action>=10 && action<20) {
-            Reel reel = new Reel(world.guy, world.groupBox, world.groupReceptacle, world.groupBrick);
-            switch (action) {
-                case UNDO:
-                    world.undo();
-                    break;
-                case REDO:
-                    world.redo();
-                    break;
-                case RESTART:
-                    world.restart();
-                    break;
-            }
-            guyEntity.addAction(Actions.moveBy(world.guy.x * 40 - reel.guy.x * 40, world.guy.y * 40 - reel.guy.y * 40, 0.5f, Interpolation.swing));
-
-            for (int i = 0; i < boxEntityList.size(); i++) {
-                boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * 40 - reel.groupBox.get(i).x * 40, world.groupBox.get(i).y * 40 - reel.groupBox.get(i).y * 40, 0.5f, Interpolation.swing));
-            }
+        if (action==CHANGE_VIEWPORT){
+            viewPortMap=!viewPortMap;
+            if(viewPortMap)
+                setBounds();
+            if(!viewPortMap)
+                ((OrthographicCamera) stage.getCamera()).zoom = 1 ;
         }
+    }
+
+    private void setBounds() {
+        minX = maxX = brickEntityList.get(0).getX();
+        minY = maxY = brickEntityList.get(0).getY();
+        for (BrickEntity brickEntity : brickEntityList) {
+            if (minX > brickEntity.getX())
+                minX = brickEntity.getX();
+            if (maxX < brickEntity.getX())
+                maxX = brickEntity.getX();
+            if (minY > brickEntity.getY())
+                minY = brickEntity.getY();
+            if (maxY < brickEntity.getY())
+                maxY = brickEntity.getY();
+        }
+        maxX += PLANK_CONSTANT;
+        maxY += PLANK_CONSTANT;
+        float deltaX = maxX - minY /*+ 80*/;
+        float deltaY = maxY - minY /*+ 80*/;
+        System.out.println(deltaX + ", " + deltaY);
+        float screenX = 1920;
+        float screenY = 1080;
+        //float zoom=Math.max(deltaX/screenX, deltaY/screenY);
+        float zoom = Math.min(screenX / deltaX, screenY / deltaY);
+        ((OrthographicCamera) stage.getCamera()).zoom = 1 / zoom;
+        ((OrthographicCamera) stage.getCamera()).position.set(deltaX / 2 /*+ (PLANK_CONSTANT - 40)*/, deltaY / 2 /*+ (PLANK_CONSTANT - 40)*/, 0);
     }
 }

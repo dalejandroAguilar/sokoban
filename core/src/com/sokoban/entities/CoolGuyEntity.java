@@ -196,6 +196,10 @@ public class CoolGuyEntity extends Actor implements Disposable {
         isPushing = false;
     }
 
+    public boolean isOnWalking(){
+        return isWalking;
+    }
+
     @Override
     public void dispose() {
         for (Texture texture : IDLEFrames)

@@ -30,7 +30,7 @@ public class World {
         reel.clear();
 
         for (int i = 0; i < data.length; i++)
-            for (int j = 0; j < data[0].length(); j++)
+            for (int j = 0; j < data[i].length(); j++)
                 switch (data[i].charAt(j)) {
                     case 'B':
                         groupBrick.add(new Brick(j, i));
