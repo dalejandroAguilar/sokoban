@@ -3,15 +3,17 @@ package com.sokoban.sokobanWorld;
 public class Box extends Brick {
     public boolean isEmbonated;
     protected boolean isSlippy;
+    public boolean isAlive;
 
-    Box(int x, int y, boolean isSlippy) {
+    Box(int x, int y, boolean isAlive,boolean isSlippy) {
         super(x, y);
         isEmbonated = false;
         this.isSlippy = isSlippy;
+        this.isAlive = isAlive;
     }
 
     Box(int x, int y) {
-        this(x, y, false);
+        this(x, y, true, false);
     }
 
     Box() {

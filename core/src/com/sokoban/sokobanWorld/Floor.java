@@ -4,7 +4,7 @@ public class Floor extends Brick{
     public boolean isAlive;
     public Floor (int x, int y, boolean isAlive){
         super(x,y);
-        isAlive=true;
+        this.isAlive=isAlive;
     }
 
     public Floor (int x, int y){

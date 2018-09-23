@@ -1,6 +1,7 @@
-package com.sokoban;
+package com.sokoban.screens;
 
 import com.badlogic.gdx.Screen;
+import com.sokoban.MainGame;
 
 public abstract class BaseScreen implements Screen {
     protected MainGame mainGame;

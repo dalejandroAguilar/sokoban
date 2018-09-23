@@ -92,7 +92,7 @@ public class CoolGuyEntity extends Actor implements Disposable {
         animationIdleSide = new Animation(.13f, idleSideFrames);
         animationWalkFront = new Animation(.1f, walkFrontFrames);
         animationWalkBack = new Animation(.1f, walkBackFrames);
-        animationWalkSide = new Animation(.1f, walkSideFrames);
+        animationWalkSide = new Animation(.10f, walkSideFrames);
 
         setBounds(guy.x * PLANK_CONSTANT, guy.y * PLANK_CONSTANT, PLANK_CONSTANT, PLANK_CONSTANT);
         //addAction(Actions.moveTo(1,2,3));
@@ -170,12 +170,12 @@ public class CoolGuyEntity extends Actor implements Disposable {
 
     }
 
-    public void changeDirection(int direction) {
-        this.direction = direction;
-    }
+    //public void changeDirection(int direction) {
+    //    this.direction = direction;
+    //}
 
     public void startWalk(int direction) {
-        changeDirection(direction);
+        setDirection(direction);
         elapsedTime = 0;
         isWalking = true;
     }
@@ -194,6 +194,10 @@ public class CoolGuyEntity extends Actor implements Disposable {
     public void stopPush() {
         stopWalk();
         isPushing = false;
+    }
+
+    public void setDirection(int direction){
+        this.direction=direction;
     }
 
     public boolean isOnWalking(){

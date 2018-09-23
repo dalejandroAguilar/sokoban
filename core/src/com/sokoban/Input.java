@@ -37,7 +37,7 @@ public class Input implements GestureDetector.GestureListener {
 
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
-        System.out.println(velocityX);
+        //System.out.println(velocityX);
         return true;
     }
 
