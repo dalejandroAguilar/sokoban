@@ -125,7 +125,7 @@ public class CoolGuyEntity extends Actor implements Disposable {
                         break;
                     case RIGHT:
                         animation = animationPushLeft;
-                        amountX = amountX +20;
+                        amountX = amountX + 20;
                         flipX = true;
                         //amountX=amountX+100;
                         break;
@@ -143,7 +143,7 @@ public class CoolGuyEntity extends Actor implements Disposable {
                         break;
                     case RIGHT:
                         animation = animationWalkSide;
-                        flipX=true;
+                        flipX = true;
                         break;
                 }
         } else
@@ -159,7 +159,7 @@ public class CoolGuyEntity extends Actor implements Disposable {
                     break;
                 case RIGHT:
                     animation = animationIdleSide;
-                    flipX=true;
+                    flipX = true;
                     break;
             }
         Texture texture = (Texture) (animation.getKeyFrame(elapsedTime, true));
@@ -196,11 +196,11 @@ public class CoolGuyEntity extends Actor implements Disposable {
         isPushing = false;
     }
 
-    public void setDirection(int direction){
-        this.direction=direction;
+    public void setDirection(int direction) {
+        this.direction = direction;
     }
 
-    public boolean isOnWalking(){
+    public boolean isOnWalking() {
         return isWalking;
     }
 

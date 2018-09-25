@@ -7,6 +7,7 @@ public class Reel {
     public ArrayList<Box> groupBox = new ArrayList<Box>();
     public ArrayList<Receptacle> groupReceptacle = new ArrayList<Receptacle>();
     public Guy guy;
+    public int pushes;
     public Reel (Guy guy, ArrayList<Box> groupBox, ArrayList<Receptacle> groupReceptacle, ArrayList<Brick> groupBrick ){
         for(int i=0; i < groupBrick.size(); i++ )
             this.groupBrick.add(new Brick(groupBrick.get(i).x,groupBrick.get(i).y));

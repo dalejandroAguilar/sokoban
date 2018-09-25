@@ -31,27 +31,9 @@ public class GirlEntity extends Actor {
 
         animation = new Animation(0.3f/9f,animationFrames);
 
-
             setBounds(guy.x * 40, guy.y * 40, 40, 40);
-        //addAction(Actions.moveTo(1,2,3));
 
-        System.out.println("asno");
-        //GuyEntity.this.addAction(Actions.sequence(Actions.alpha(0), Actions.fadeIn(1)));
 
-        // addListener(new InputListener(){
-        //     @Override
-        //     public boolean keyDown(InputEvent event, int keycode) {
-//
-        //            // MoveByAction mba = new MoveByAction();
-        //            // mba.setAmount(100f,100f);
-        //            // mba.setDuration(100f);
-        //            // GuyEntity.this.addAction(mba);
-        //             System.out.println("asno");
-        //            // GuyEntity.this.addAction(Actions.sequence(Actions.alpha(0), Actions.fadeIn(1)));
-//
-        //         return true;
-        //     }
-        // });
 
     }
 

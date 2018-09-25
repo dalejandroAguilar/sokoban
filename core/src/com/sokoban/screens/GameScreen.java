@@ -2,38 +2,34 @@ package com.sokoban.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.IntAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.sokoban.MainGame;
 import com.sokoban.entities.BoxEntity;
 import com.sokoban.entities.BrickEntity;
 import com.sokoban.entities.CoolGuyEntity;
 import com.sokoban.entities.FloorEntity;
-import com.sokoban.entities.GirlEntity;
-import com.sokoban.entities.GuyEntity;
-import com.sokoban.entities.ImageButtonEntity;
 import com.sokoban.entities.ReceptacleEntity;
 import com.sokoban.sokobanWorld.Box;
 import com.sokoban.sokobanWorld.Brick;
@@ -46,8 +42,6 @@ import com.sokoban.sokobanWorld.World;
 
 import java.util.ArrayList;
 
-import javax.swing.text.LabelView;
-
 import static com.sokoban.Constants.CHANGE_VIEWPORT;
 import static com.sokoban.Constants.PLANK_CONSTANT;
 import static com.sokoban.Constants.REDO;
@@ -56,122 +50,45 @@ import static com.sokoban.Constants.UNDO;
 
 public class GameScreen extends BaseScreen implements GestureDetector.GestureListener {
     static final int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3, NULL = -1, THREESHOLD_VELOCITY = 50;
-    final int SIZE = 140;
-    SpriteBatch batch;
-    Animation animation;
-    float elapsedTime;
-    IntAction intAction;
     GestureDetector gestureDetector;
+    TextureAtlas atlas = mainGame.getManager().get("skin3/pack.atlas", TextureAtlas.class);
+    Texture textureUndo = new Texture(Gdx.files.internal("buttons2/undo.png"));
+    Texture textureRedo = new Texture(Gdx.files.internal("buttons2/redo.png"));
+    Texture textureRestart = new Texture(Gdx.files.internal("buttons2/restart.png"));
+    Texture textureHome = new Texture(Gdx.files.internal("buttons2/home.png"));
+    Texture texturePath = new Texture(Gdx.files.internal("buttons2/path.png"));
     private Skin skin;
-    private TextButton textButton;
     private Stage stage;
     private Stage stage2;
-    private Stage  stage3;
-    private Table table;
+    private Stage stage3;
     private World world;
     private CoolGuyEntity coolGuyEntity;
     private ArrayList<BrickEntity> brickEntityList;
     private ArrayList<FloorEntity> floorEntityList;
     private ArrayList<BoxEntity> boxEntityList;
     private ArrayList<ReceptacleEntity> receptacleEntityList;
-    //private Music music;
-    private float tablaWidth;
-    //private ArrayList<String[]> levels;
-    private int indexLevel;
     private float minX, minY, maxX, maxY;
     private boolean viewPortMap;
-    private boolean isOnPan;
-
     private Label labelMoves;
-
+    private Label labelPushes;
 
     public GameScreen(final MainGame mainGame) {
         super(mainGame);
-        //mainGame.getLevelManager().loadProgress();
-        isOnPan = false;
-        indexLevel = 0;
-
         viewPortMap = true;
-        TextureAtlas atlas = mainGame.getManager().get("skin3/pack.atlas", TextureAtlas.class);
+
         skin = new Skin(Gdx.files.internal("skin3/skin.json"), atlas);
-        textButton = new TextButton("asno", skin);
-        textButton.setSize(200, 200);
-        textButton.setPosition(220, 250);
         stage = new Stage(new FitViewport(1920, 1080));
-
-
         stage2 = new Stage(new FitViewport(1920, 1080), stage.getBatch());
         stage3 = new Stage(new FitViewport(1920, 1080), stage.getBatch());
-//        music = mainGame.getManager().get("music/Slider.ogg");
-        intAction = new IntAction();
-        intAction.setDuration(12);
-        intAction.setStart(0);
-        intAction.setEnd(12);
-        intAction.setReverse(true);
+
         InputMultiplexer multiplexer = new InputMultiplexer();
 
-        //levels=LevelsManage.getAllFiles("levels");
-
-        String[] data = {"  BBB    ",
-                "  BRB    ",
-                "  B BBBB ",
-                "BBBXGXRB ",
-                "BR X  BBB ",
-                "BBBBXB   ",
-                "   BRB   ",
-                "   BBB   "};
-        //System.out.println(levels.get(2)[0]);
-
-        //String[][] levels = LevelManager.getAllFiles();
-        //System.out.println("File[0]"+files[1].name());
-        //System.out.println("File[0]"+file.readString());
-        //mainGame.getManager().get("levels/level_1.txt", FileHandle.class);
-        //String[] level = LevelsManage.fromFileToStringArray((File));
-        //for(int i=0; i<levels[0].length; i++)
-        //    System.out.println(levels[0][i]);
-        //Gdx.app.log("Current level", "" + mainGame.getLevelManager().getIndex());
-        world = new World(mainGame.getLevelManager().getCurrentLevel());
-
-        batch = new SpriteBatch();
-        Texture[][] guyTextures = new Texture[2][4];
-
-        //Texture floorTexture = mainGame.getManager().get("world/Floor.png");
-        //Texture guyTexture = mainGame.getManager().get("guy/DOWN.png");
-        //Texture brickTexture = mainGame.getManager().get("world/Brick.png");
-        //Texture boxTexture = mainGame.getManager().get("world/Box.png");
-        //Texture embonatedTexture = mainGame.getManager().get("world/Embonated.png");
-
-        //Texture receptacleTexture = mainGame.getManager().get("world/Receptacle.png");
-
-
-        //Texture[] textures = new Texture[4];
-        //guyTextures[0][DOWN] = new Texture("guy/DOWN.png");
-        //guyTextures[1][DOWN] = mainGame.getManager().get("guy/TOP_PUSH.png");
-        //guyTextures[0][RIGHT] = mainGame.getManager().get("guy/RIGHT.png");
-        //guyTextures[1][RIGHT] = mainGame.getManager().get("guy/RIGHT_PUSH.png");
-        //guyTextures[0][UP] = mainGame.getManager().get("guy/DOWN.png");
-        //guyTextures[1][UP] = mainGame.getManager().get("guy/DOWN_PUSH.png");
-        //guyTextures[0][LEFT] = mainGame.getManager().get("guy/LEFT.png");
-        //guyTextures[1][LEFT] = mainGame.getManager().get("guy/LEFT_PUSH.png");
-        //Texture[] boxTextures = new Texture[2];
-        //boxTextures[0] = boxTexture;
-        //boxTextures[1] = embonatedTexture;
-
-        //textures[0] = mainGame.getManager().get("world/Floor.png");
-        //textures[1] = mainGame.getManager().get("guy/DOWN.png");
-        //textures[2] = mainGame.getManager().get("world/Box.png");
-        //animation = new Animation(1f / 30f, textures);
-        //System.out.println(world.guy.x + "," + world.guy.y);
-//        Texture girlTexture = mainGame.getManager().get("walk.png");
+        world = new World(mainGame.getLevelManager().getCurrentLevel().getMap());
         coolGuyEntity = new CoolGuyEntity(world.guy);
         brickEntityList = new ArrayList<BrickEntity>();
         boxEntityList = new ArrayList<BoxEntity>();
         receptacleEntityList = new ArrayList<ReceptacleEntity>();
         floorEntityList = new ArrayList<FloorEntity>();
-
-//        stage.addActor(table);
-        //Gdx.input.setInputProcessor(stage);
-        //stage.setKeyboardFocus(stage.getActors().first());
 
         for (Floor floor : this.world.groupFloor) {
 
@@ -185,18 +102,13 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     if (!coolGuyEntity.isOnWalking()) {
-                        //floorEntity.floor(false);
                         PathFinding pathFinding = new PathFinding(world, target);
-                        //pathFinding.print();
-                        //pathFinding.getPath();
                         int path[] = pathFinding.getPath();
                         if (path[0] != NULL) {
                             SequenceAction animation = new SequenceAction();
                             coolGuyEntity.startWalk(NULL);
                             for (int i = 0; i < path.length; i++) {
-                                //onAction(path[i]);
                                 final int action = path[i];
-
                                 int amountX = 0;
                                 int amountY = 0;
                                 switch (action) {
@@ -227,7 +139,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                                 animation.addAction(Actions.run(new Runnable() {
                                     public void run() {
                                         world.move(action);
-                                        labelMoves.setText("moves: "+world.getMoves());
+                                        labelMoves.setText("moves: " + world.getMoves());
                                     }
                                 }));
 
@@ -241,116 +153,31 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
                             coolGuyEntity.addAction(animation);
                         }
-
-                       // Gdx.app.log("path", "" + pathFinding.getPath()[0]);
-
                     }
-                    //Gdx.app.log("BUBBLE", "touchdown");
                 }
 
                 ;
             });
-            //floorEntity.addListener(new InputListener() {
-            //    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-            //        Gdx.app.log("BUBBLE", "touchdown");
-            //        return true;  // must return true for touchUp event to occur
-            //    }
-            //
-//
-            //    public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-            //        Gdx.app.log("BUBBLE", "touchup");
-            //        if (!coolGuyEntity.isOnWalking()) {
-            //            floorEntity.setIsAlive(false);
-            //            PathFinding pathFinding = new PathFinding(world, target);
-            //            //pathFinding.print();
-            //            //pathFinding.getPath();
-            //            int path[] = pathFinding.getPath();
-            //            if (path[0] != NULL) {
-            //                SequenceAction animation = new SequenceAction();
-            //                coolGuyEntity.startWalk(NULL);
-            //                for (int i = 0; i < path.length; i++) {
-            //                    //onAction(path[i]);
-            //                    final int action = path[i];
-//
-            //                    int amountX = 0;
-            //                    int amountY = 0;
-            //                    switch (action) {
-            //                        case UP:
-            //                            amountY = -PLANK_CONSTANT;
-            //                            break;
-            //                        case DOWN:
-            //                            amountY = PLANK_CONSTANT;
-            //                            break;
-//
-            //                        case LEFT:
-            //                            amountX = -PLANK_CONSTANT;
-            //                            break;
-            //                        case RIGHT:
-            //                            amountX = PLANK_CONSTANT;
-            //                            break;
-            //                    }
-            //                    world.move(action);
-            //                    animation.addAction(Actions.run(new Runnable() {
-            //                        public void run() {
-            //                            coolGuyEntity.setDirection(action);
-            //                        }
-            //                    }));
-//
-            //                    animation.addAction(Actions.moveBy(amountX, amountY, 0.2f));
-//
-            //                    animation.addAction(Actions.run(new Runnable() {
-            //                        public void run() {
-            //                            //world.move(action);
-            //                        }
-            //                    }));
-//
-            //                }
-            //                animation.addAction(Actions.run(new Runnable() {
-            //                    public void run() {
-            //                        coolGuyEntity.stopWalk();
-            //                        floorEntity.setIsAlive(true);
-            //                    }
-            //                }));
-//
-            //                coolGuyEntity.addAction(animation);
-            //            }
-//
-            //            Gdx.app.log("path", "" + pathFinding.getPath()[0]);
-//
-            //        }
-            //    }
-            //});
-
-
             stage.addActor(floorEntity);
         }
-
 
 
         for (Receptacle receptacle : world.groupReceptacle)
             receptacleEntityList.add(new ReceptacleEntity(receptacle));
 
         for (final ReceptacleEntity receptacleEntity : receptacleEntityList) {
-            //receptacleEntity.addAction(Actions.forever(Actions.sequence(Actions.fadeIn(0.5f),Actions.fadeOut(0.5f))));
-            // Color TRANSPARENT = new Color(1f, 1f, 1f, .5f);
-            // receptacleEntity.setColor(0,1,0,1);
             final Node target = new Node(receptacleEntity.receptacle.x, receptacleEntity.receptacle.y);
             receptacleEntity.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     if (!coolGuyEntity.isOnWalking()) {
-                        //  receptacleEntity.setIsAlive(false);
                         PathFinding pathFinding = new PathFinding(world, target);
-                        //pathFinding.print();
-                        //pathFinding.getPath();
                         int path[] = pathFinding.getPath();
                         if (path[0] != NULL) {
                             SequenceAction animation = new SequenceAction();
                             coolGuyEntity.startWalk(NULL);
                             for (int i = 0; i < path.length; i++) {
-                                //onAction(path[i]);
                                 final int action = path[i];
-
                                 int amountX = 0;
                                 int amountY = 0;
                                 switch (action) {
@@ -387,25 +214,17 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                             animation.addAction(Actions.run(new Runnable() {
                                 public void run() {
                                     coolGuyEntity.stopWalk();
-                                    //receptacleEntity.setIsAlive(true);
                                 }
                             }));
 
                             coolGuyEntity.addAction(animation);
                         }
-
-                       // Gdx.app.log("path", "" + pathFinding.getPath()[0]);
-
                     }
-                    //
-                    // Gdx.app.log("BUBBLE", "touchdown");
                 }
 
                 ;
             });
             stage.addActor(receptacleEntity);
-            // receptacleEntity.setColor(TRANSPARENT);
-            // receptacleEntity.addAction(Actions.fadeIn(2f));
         }
         for (Brick brick : world.groupBrick)
             brickEntityList.add(new BrickEntity(brick));
@@ -421,143 +240,73 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
         stage.addActor(coolGuyEntity);
 
-//        Window window = new Window("PAUSE", skin);
-        //stage2.addActor(textButton);
         Table table = new Table(skin);
         table.setFillParent(true);
         table.left().top();
 
-        //table.debug();
-
-        TextButton undoButton = new TextButton("undo", skin);
-        TextButton redoButton = new TextButton("redo", skin);
-        TextButton restartButton = new TextButton("restart", skin);
         TextButton viewport = new TextButton("viewport", skin);
 
-        Texture buttonOrange = new Texture(Gdx.files.internal("buttons2/orange.png"));
-        Texture buttonBlue = new Texture(Gdx.files.internal("buttons2/blue.png"));
-        Texture buttonPurple = new Texture(Gdx.files.internal("buttons2/purple.png"));
+        Skin skinDefault = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        Skin skinDefault2 = new Skin(Gdx.files.internal("skin2/uiskin.json"));
 
-        final ImageButtonEntity imageButtonEntityUndo = new ImageButtonEntity(new Texture(Gdx.files.internal(
-                "buttons2/undo.png")), buttonOrange, buttonBlue);
-        final ImageButtonEntity imageButtonEntityRedo = new ImageButtonEntity(new Texture(Gdx.files.internal(
-                "buttons2/redo.png")), buttonOrange, buttonBlue);
-        final ImageButtonEntity imageButtonEntityRestart = new ImageButtonEntity(new Texture(Gdx.files.internal(
-                "buttons2/restart.png")), buttonOrange, buttonBlue);
 
-        final ImageButtonEntity imageButtonEntityConfig = new ImageButtonEntity(new Texture(Gdx.files.internal(
-                "buttons2/config.png")), buttonPurple, buttonBlue);
-        final ImageButtonEntity imageButtonEntityHome = new ImageButtonEntity(new Texture(Gdx.files.internal(
-                "buttons2/home.png")), buttonPurple, buttonBlue);
-        final ImageButtonEntity imageButtonEntityPath = new ImageButtonEntity(new Texture(Gdx.files.internal(
-                "buttons2/path.png")), buttonPurple, buttonBlue);
-
-        imageButtonEntityUndo.addListener(new ClickListener() {
-
-            //@Override
-            //public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-            //    imageButtonEntityUndo.setToEnable();
-            //}
-
+        ImageButton.ImageButtonStyle imageButtonStyleUndo = new ImageButton.ImageButtonStyle(
+                skinDefault.get(Button.ButtonStyle.class));
+        imageButtonStyleUndo.imageUp = new TextureRegionDrawable(new TextureRegion(textureUndo));
+        ImageButton imageButtonUndo = new ImageButton(imageButtonStyleUndo);
+        imageButtonUndo.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //super.clicked(event, x, y);
                 onAction(UNDO);
             }
-
-            //@Override
-            //public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-            //    imageButtonEntityUndo.setToDisable();
-            //    return false;  // must return true for touchUp event to occur
-            //}
         });
 
-
-        imageButtonEntityRedo.addListener(new InputListener() {
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityRedo.setToDisable();
-                return true;  // must return true for touchUp event to occur
-            }
-
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityRedo.setToEnable();
+        ImageButton.ImageButtonStyle imageButtonStyleRedo = new ImageButton.ImageButtonStyle(
+                skinDefault.get(Button.ButtonStyle.class));
+        imageButtonStyleRedo.imageUp = new TextureRegionDrawable(new TextureRegion(textureRedo));
+        ImageButton imageButtonRedo = new ImageButton(imageButtonStyleRedo);
+        imageButtonRedo.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
                 onAction(REDO);
             }
         });
 
-        imageButtonEntityRestart.addListener(new InputListener() {
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityRestart.setToDisable();
-                return true;  // must return true for touchUp event to occur
-            }
-
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityRestart.setToEnable();
+        ImageButton.ImageButtonStyle imageButtonStyleRestart = new ImageButton.ImageButtonStyle(
+                skinDefault.get(Button.ButtonStyle.class));
+        imageButtonStyleRestart.imageUp = new TextureRegionDrawable(new TextureRegion(textureRestart));
+        ImageButton imageButtonRestart = new ImageButton(imageButtonStyleRestart);
+        imageButtonRestart.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
                 onAction(RESTART);
             }
         });
 
-        labelMoves=new Label("moves: 0",skin);
-
-
-        imageButtonEntityConfig.addListener(new InputListener() {
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityConfig.setToDisable();
-                return true;  // must return true for touchUp event to occur
-            }
-
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityConfig.setToEnable();
-                onAction(NULL);
-            }
-        });
-
-        imageButtonEntityPath.addListener(new InputListener() {
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityPath.setToDisable();
-                return true;  // must return true for touchUp event to occur
-            }
-
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityPath.setToEnable();
-                mainGame.setScreen(new StageScreen(mainGame));
-            }
-        });
-
-
-        imageButtonEntityHome.addListener(new InputListener() {
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityHome.setToDisable();
-                return true;  // must return true for touchUp event to occur
-            }
-
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                imageButtonEntityHome.setToEnable();
+        ImageButton.ImageButtonStyle imageButtonStyleHome = new ImageButton.ImageButtonStyle(
+                skinDefault2.get(Button.ButtonStyle.class));
+        imageButtonStyleHome.imageUp = new TextureRegionDrawable(new TextureRegion(textureHome));
+        ImageButton imageButtonHome = new ImageButton(imageButtonStyleHome);
+        imageButtonHome.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
                 mainGame.setScreen(new TitleScreen(mainGame));
             }
         });
 
-
-        undoButton.addCaptureListener(new ChangeListener() {
+        ImageButton.ImageButtonStyle imageButtonStylePath = new ImageButton.ImageButtonStyle(
+                skinDefault2.get(Button.ButtonStyle.class));
+        imageButtonStylePath.imageUp = new TextureRegionDrawable(new TextureRegion(texturePath));
+        ImageButton imageButtonPath = new ImageButton(imageButtonStylePath);
+        imageButtonPath.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                onAction(UNDO);
+            public void clicked(InputEvent event, float x, float y) {
+                mainGame.setScreen(new StageScreen(mainGame));
             }
         });
 
-        redoButton.addCaptureListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                onAction(REDO);
-            }
-        });
-
-        restartButton.addCaptureListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                onAction(RESTART);
-            }
-        });
+        labelMoves = new Label("moves: 0", skin);
+        labelPushes = new Label("pushes: 0", skin);
 
         viewport.addCaptureListener(new ChangeListener() {
             @Override
@@ -566,76 +315,49 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
             }
         });
         //table.setDebug(true);
-        table.add(imageButtonEntityUndo);
-        table.add(imageButtonEntityRedo).row();
-        table.add(imageButtonEntityRestart).colspan(2).row();
+        table.add(new Actor()).height(mainGame.handler.getHeightBanner()).row();
+        table.add(imageButtonUndo);
+        table.add(imageButtonRedo).row();
+        table.add(imageButtonRestart).colspan(2).row();
         table.add(labelMoves).colspan(2).row();
+        table.add(labelPushes).colspan(2).row();
         table.add(viewport).colspan(2);
         Table table2 = new Table(skin);
         table2.left().bottom();
-        table2.add(imageButtonEntityHome);
-        table2.add(imageButtonEntityPath);
-        //table2.add(imageButtonEntityConfig);
-
-        //table.add(undoButton).left();
-        //table.row();
-        //table.add(redoButton).left();
-        //table.row();
-        //table.add(restartButton).left();
-
+        table2.add(imageButtonHome);
+        table2.add(imageButtonPath);
 
         stage2.addActor(table2);
-        //undoButton.addAction(
-        //        Actions.parallel(
-        //                Actions.moveBy(-1500,0,.4f),
-        //                Actions.fadeOut(.5f)
-        //        )
-        //);
 
-        tablaWidth = table.getWidth();
         stage2.addActor(table);
-        //stage.addActor(window);
-        //stage.addListener(new ClickListener() {
-        //    @Override
-        //    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-        //        System.out.println("asno2");
-        //        event.handle();//the Stage will stop trying to handle this event
-        //        return true; //the inputmultiplexer will stop trying to handle this touch
-        //    }
-//
-        //    @Override
-        //    public void touchDragged(InputEvent event, float x, float y, int pointer) {
-        //        System.out.println("draa");
-        //    }
-        //});
+
         gestureDetector = new GestureDetector(this);
 
+        multiplexer.addProcessor(stage2);
         multiplexer.addProcessor(gestureDetector);
         multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(stage2);
 
         Gdx.input.setInputProcessor(multiplexer);
 
-        //stage.addListener(new GestureDetector.GestureListener(){
-        //    @Override
-        //    public boolean fling( float velocityX, float velocityY, int button) {
-        //        if (Math.abs(velocityX) > Math.abs(velocityY))
-        //            if (velocityX > 0)
-        //                world.move(RIGHT);
-        //            else
-        //                world.move(LEFT);
-        //        if (Math.abs(velocityX) < Math.abs(velocityY))
-        //            if (velocityY > 0)
-        //                world.move(UP);
-        //            else
-        //                world.move(DOWN);
-        //        return true;
-        //    }
-        //});
-        //Gdx.input.setInputProcessor(gestureDetector);
         setBounds();
-        //((OrthographicCamera)stage.getCamera()).zoom += 0.5f;
-       // System.out.println(((OrthographicCamera) stage.getCamera()).zoom);
+
+        Table table1 = new Table(skin);
+        table1.setFillParent(true);
+        table1.add(new Label(mainGame.getLevelManager().getCurrentLevelWorld().getName(), skin)).row();
+        table1.add(new Label(mainGame.getLevelManager().getCurrentLevel().getName(), skin));
+        table1.addAction(
+                Actions.sequence(
+                        Actions.delay(3)
+                        ,
+                        Actions.parallel(
+                                Actions.moveBy(-stage3.getWidth(), 0, 1f)
+                                ,
+                                Actions.fadeOut(1f)
+                        )
+
+                )
+        );
+        stage3.addActor(table1);
 
     }
 
@@ -643,34 +365,17 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     public void render(float delta) {
         Gdx.gl.glClearColor(0.f, 1.f, 1.f, 1.f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.act(Gdx.graphics.getDeltaTime());
-        //System.out.println(input.delta.x);
-        // if(input.delta.x==0){
-        //stage.getCamera().translate(guyEntity.getX() - stage.getCamera().position.x, guyEntity.getY() - stage.getCamera().position.y, 0);
-        if (!viewPortMap)
-            stage.getCamera().position.set(coolGuyEntity.getX(), coolGuyEntity.getY(), 0);
-        // }
-        elapsedTime += delta;
-        batch.begin();
-        // batch.draw((Texture) animation.getKeyFrame(elapsedTime,true),0,0);
+
+        stage.act(delta);
         stage.draw();
-        stage2.act();
+        stage2.act(delta);
         stage2.draw();
-        stage3.act();
+        stage3.act(delta);
         stage3.draw();
-        //  table.drawDebug(stage.getBatch());
-        batch.end();
-        //System.out.println(intAction.getValue());
-        //if(world.win()) {
-        //    if (indexLevel < levels.size() - 1) {
-        //        indexLevel++;
-        //        world = new World(levels.get(indexLevel));
-//
-        //    } else {
-        //        indexLevel = 0;
-        //        world = new World(levels.get(indexLevel));
-        //    }
-        //}
+
+        if (!viewPortMap) {
+            stage.getCamera().position.set(coolGuyEntity.getX(), coolGuyEntity.getY(), 0);
+        }
 
 
     }
@@ -689,14 +394,18 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         for (FloorEntity floorEntity : floorEntityList)
             floorEntity.dispose();
         stage.dispose();
-        //music.dispose();
+        atlas.dispose();
+        textureUndo.dispose();
+        textureRedo.dispose();
+        textureRestart.dispose();
+        textureHome.dispose();
+        texturePath.dispose();
+
         Gdx.input.setInputProcessor(null);
     }
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
-        // System.out.println("down");
-
         return false;
     }
 
@@ -707,22 +416,17 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
     @Override
     public boolean longPress(float x, float y) {
-        isOnPan = true;
-        //Gdx.app.log("longPress", "longPress");
         return false;
     }
 
     @Override
     public void show() {
         super.show();
-        //  music.play();
     }
 
     @Override
     public void hide() {
         super.hide();
-        //music.stop();
-        //mainGame.setScreen(new TitleScreen(mainGame));
     }
 
 
@@ -736,61 +440,23 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
     @Override
     public boolean fling(float velocityX, float velocityY, int button) {
-        //if(Math.abs(velocityX)>THREESHOLD_VELOCITY && Math.abs(velocityY)<THREESHOLD_VELOCITY)
-        //    if(velocityX>0)
-        //        world.move(RIGHT);
-        //    else
-        //        world.move(LEFT);
-        //if(Math.abs(velocityX)<THREESHOLD_VELOCITY && Math.abs(velocityY)>THREESHOLD_VELOCITY)
-        //    if(velocityY>0)
-        //        world.move(UP);
-        //    else
-        //        world.move(DOWN);
-        if (!isOnPan) {
-            //if (velocityX == 0 && velocityY == 0)
-                //Gdx.app.log("Fling", "osNOfling");
-
-            if (Math.abs(velocityX) > Math.abs(velocityY))
-                if (velocityX > 0)
-                    onAction(RIGHT);
-                else
-                    onAction(LEFT);
-            else if (Math.abs(velocityX) < Math.abs(velocityY))
-                if (velocityY > 0)
-                    onAction(UP);
-                else
-                    onAction(DOWN);
-            else {
-
-                //if (velocityX == 0 && velocityY == 0)
-                   // Gdx.app.log("Fling", "osNOfling");
-                return false;
-            }
-            //Gdx.app.log("Fling", "fling");
-        }
-
+        if (Math.abs(velocityX) > Math.abs(velocityY))
+            if (velocityX > 0)
+                onAction(RIGHT);
+            else
+                onAction(LEFT);
+        else if (Math.abs(velocityX) < Math.abs(velocityY))
+            if (velocityY > 0)
+                onAction(UP);
+            else
+                onAction(DOWN);
+        else
+            return false;
         return true;
     }
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        // Gdx.app.log("Pan","pan in: "+deltaX+", "+deltaY);
-        //if (!fling(0, 0, 1)) {
-        //      Gdx.app.log("Pan","is pan");
-        //}ç
-        if (isOnPan) {
-            Gdx.app.log("Pan", "is pan");
-            if (Math.abs(deltaX) > Math.abs(deltaY))
-                if (deltaX > 0)
-                    onAction(RIGHT);
-                else
-                    onAction(LEFT);
-            else if (Math.abs(deltaX) < Math.abs(deltaY))
-                if (deltaY > 0)
-                    onAction(UP);
-                else
-                    onAction(DOWN);
-        }
         return false;
 
     }
@@ -798,9 +464,6 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
 
     @Override
     public boolean panStop(float x, float y, int pointer, int button) {
-        //Gdx.app.log("Pan", "pan out");
-        isOnPan = false;
-
         return false;
 
     }
@@ -823,8 +486,6 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
     private void onAction(final int action) {
         if (!coolGuyEntity.isOnWalking()) {
             if (action >= 0 && action < 10) {
-                //World refWorld = new World(world.);
-
                 int index = world.enhancedMove(action);
                 int amountX = 0;
                 int amountY = 0;
@@ -844,7 +505,7 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 }
 
                 coolGuyEntity.setDirection(action);
-                labelMoves.setText("moves: "+world.getMoves());
+
 
                 if (index != -2)
                     coolGuyEntity.addAction(
@@ -854,10 +515,11 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                                             coolGuyEntity.startWalk(action);
                                         }
                                     }),
-                                    Actions.moveBy(amountX, amountY, 0.3f),//, Interpolation.swing),
+                                    Actions.moveBy(amountX, amountY, 0.3f),
                                     Actions.run(new Runnable() {
                                         public void run() {
                                             coolGuyEntity.stopWalk();
+                                            labelMoves.setText("moves: " + world.getMoves());
                                         }
                                     })
                             ));
@@ -873,6 +535,8 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                                     Actions.run(new Runnable() {
                                         public void run() {
                                             coolGuyEntity.stopPush();
+                                            labelPushes.setText("pushes: " + world.getPushes());
+                                            labelMoves.setText("moves: " + world.getMoves());
                                         }
                                     })
                             ));
@@ -883,18 +547,33 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 switch (action) {
                     case UNDO:
                         world.undo();
-                        labelMoves.setText("moves: "+world.getMoves());
+                        labelMoves.setText("moves: " + world.getMoves());
+                        labelPushes.setText("pushes: " + world.getPushes());
                         break;
                     case REDO:
                         world.redo();
-                        labelMoves.setText("moves: "+world.getMoves());
+                        labelMoves.setText("moves: " + world.getMoves());
+                        labelPushes.setText("pushes: " + world.getPushes());
                         break;
                     case RESTART:
                         world.restart();
-                        labelMoves.setText("moves: "+world.getMoves());
+                        labelMoves.setText("moves: " + world.getMoves());
+                        labelPushes.setText("pushes: " + world.getPushes());
                         break;
                 }
-                coolGuyEntity.addAction(Actions.moveBy(world.guy.x * PLANK_CONSTANT - reel.guy.x * PLANK_CONSTANT, world.guy.y * PLANK_CONSTANT - reel.guy.y * PLANK_CONSTANT, 0.5f, Interpolation.swing));
+                coolGuyEntity.addAction(
+                        Actions.sequence(
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //TODO: set te correct position on undo, restart and redo
+                                        //coolGuyEntity.setDirection(coolGuyEntity.guy.orientation);
+                                    }
+                                })
+                                ,
+                                Actions.moveBy(world.guy.x * PLANK_CONSTANT - reel.guy.x * PLANK_CONSTANT, world.guy.y * PLANK_CONSTANT - reel.guy.y * PLANK_CONSTANT, 0.5f, Interpolation.swing)
+                        )
+                );
 
                 for (int i = 0; i < boxEntityList.size(); i++) {
                     boxEntityList.get(i).addAction(Actions.moveBy(world.groupBox.get(i).x * PLANK_CONSTANT - reel.groupBox.get(i).x * PLANK_CONSTANT, world.groupBox.get(i).y * PLANK_CONSTANT - reel.groupBox.get(i).y * PLANK_CONSTANT, 0.5f, Interpolation.swing));
@@ -910,7 +589,6 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 ((OrthographicCamera) stage.getCamera()).zoom = 1;
         }
         if (world.win()) {
-            //System.out.println("YOU WIN");
             Label label = new Label("You Win!!", skin);
             Table table = new Table(skin);
             table.setFillParent(true);
@@ -943,23 +621,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
                 }
             });
 
-
             table.add(label).colspan(3).center().row();
             table.add(nextLevelButton);
             table.add(goLevelButton);
             table.add(goTitleButton);
-            //table.addAction(Actions.scaleTo(10,10,1));
 
             stage3.addActor(table);
             Gdx.input.setInputProcessor(stage3);
-            stage2.addAction(Actions.moveBy(-500,0,0.5f));
-            //stage2.addActor(winButton);
-            //stage2.getActors().get(1).addAction(
-            //        Actions.parallel(
-            //                Actions.moveBy(1500,0,.4f),
-            //                Actions.fadeOut(.5f)
-            //        )
-            //);
+            stage2.addAction(Actions.moveBy(-500, 0, 0.5f));
         }
 
     }
@@ -979,20 +648,14 @@ public class GameScreen extends BaseScreen implements GestureDetector.GestureLis
         }
         maxX += PLANK_CONSTANT;
         maxY += PLANK_CONSTANT;
-        float deltaX = maxX - minY /*+ 80*/;
-        float deltaY = maxY - minY /*+ 80*/;
-        //System.out.println(deltaX + ", " + deltaY);
+        float deltaX = maxX - minY;
+        float deltaY = maxY - minY;
         float screenX = stage.getWidth();
         float screenY = stage.getHeight();
-        //float zoom=Math.max(deltaX/screenX, deltaY/screenY);
-        float zoom = Math.max(deltaX / (screenX-160*2), deltaY / screenY);
+        float bannerSpace = mainGame.handler.getHeightBanner();
+        float zoom = Math.max(deltaX / (screenX - 160 * 2), deltaY /
+                (screenY - bannerSpace));
         ((OrthographicCamera) stage.getCamera()).zoom = zoom;
-        //((OrthographicCamera) stage.getCamera()).position.set(0,0,0);
-        //((OrthographicCamera) stage.getCamera()).position.set
-        ((OrthographicCamera) stage.getCamera()).position.set(-160*zoom + deltaX / 2.f /*+ (PLANK_CONSTANT - 40)*/, deltaY / 2.f /*+ (PLANK_CONSTANT - 40)*/, 0);
-
+        ((OrthographicCamera) stage.getCamera()).position.set(-160 * zoom + deltaX / 2.f, +bannerSpace / 2 * zoom + deltaY / 2.f, 0);
     }
-
-
 }
-

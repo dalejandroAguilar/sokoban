@@ -1,5 +1,6 @@
 package com.sokoban;
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,19 +15,20 @@ import java.util.logging.Handler;
 public class MainGame extends Game {
 	public GameScreen gameScreen;
     public TitleScreen titleScreen;
+    public float resolution;
     //public LevelScreen levelScreen;
 	private AssetManager manager;
 	private LevelManager levelManager;
-
+    public AdHandler handler;
     public AssetManager getManager() {
         return manager;
     }
     public LevelManager getLevelManager() {
         return levelManager;
     }
-    public MainGame(){
+    public MainGame(AdHandler handler){
 	    //TODO: aquí no va nada
-        
+        this.handler=handler;
 	}
 
 	@Override
@@ -60,7 +62,8 @@ public class MainGame extends Game {
         //titleScreen =new TitleScreen(this);
         //levelScreen=new LevelScreen(this);
         //gameScreen = new GameScreen(this);
-		setScreen(new TitleScreen(this));
+        resolution= Gdx.graphics.getHeight();
+        setScreen(new TitleScreen(this));
 
 	}
 

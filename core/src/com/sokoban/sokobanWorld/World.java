@@ -15,6 +15,7 @@ public class World {
     public ArrayList<Brick> groupDeathFloor;
     public ArrayList<Reel> reel;
     int mark;
+    int pushes;
 
     public World(String[] data) {
         groupBrick = new ArrayList<Brick>();
@@ -31,36 +32,42 @@ public class World {
         groupReceptacle.clear();
         groupBrick.clear();
         groupFloor.clear();
-
+        pushes = 0;
         reel.clear();
 
         for (int i = 0; i < data.length; i++)
             for (int j = 0; j < data[i].length(); j++)
                 switch (data[i].charAt(j)) {
                     case 'B':
+                    case '#':
                         groupBrick.add(new Brick(j, i));
                         break;
                     case 'X':
+                    case '$':
                         groupBox.add(new Box(j, i));
                         break;
                     case 'f':
-                        groupBox.add(new Box(j, i, true,true));
+                        groupBox.add(new Box(j, i, true, true));
                         break;
                     case 'F':
-                        groupBox.add(new Box(j, i, true,true));
+                        groupBox.add(new Box(j, i, true, true));
                         groupReceptacle.add(new Receptacle(j, i));
                         break;
                     case 'R':
+                    case '.':
                         groupReceptacle.add(new Receptacle(j, i));
                         break;
                     case 'G':
+                    case '@':
                         guy = new Guy(j, i);
                         break;
                     case 'g':
+                    case '+':
                         guy = new Guy(j, i);
                         groupReceptacle.add(new Receptacle(j, i));
                         break;
                     case 'E':
+                    case '*':
                         groupBox.add(new Box(j, i));
                         groupReceptacle.add(new Receptacle(j, i));
                         break;
@@ -104,6 +111,8 @@ public class World {
             guy.setPosition(reel.get(Size).guy.x, reel.get(Size).guy.y);
             guy.orientation = reel.get(Size).guy.orientation;
             guy.push = reel.get(Size).guy.push;
+
+            pushes = 0;
 
             reel.clear();
             restartOrBuild();
@@ -211,15 +220,15 @@ public class World {
 
     private void setEmbonated() {
         for (Box box : groupBox)
-            box.isEmbonated=false;
+            box.isEmbonated = false;
         for (Receptacle receptacle : groupReceptacle) {
-           // System.out.println("setEmbonated");
+            // System.out.println("setEmbonated");
             receptacle.status = false;
             for (Box box : groupBox) {
                 if (receptacle.x == box.x && receptacle.y == box.y) {
                     receptacle.status = true;
                     box.isEmbonated = true;
-                   // System.out.println("setEmbonated>>ok");
+                    // System.out.println("setEmbonated>>ok");
                 }
             }
         }
@@ -273,6 +282,7 @@ public class World {
 
             mark--;
             moves--;
+            pushes = reel.get(Size).pushes;
             setEmbonated();
             setBoxStatus();
         }
@@ -280,8 +290,6 @@ public class World {
 
     public void redo() {
         if (mark < reel.size() - 2) {
-            //System.out.println("redo");
-
             final int Size = mark + 2;
             for (int i = 0; i < groupBox.size(); i++) {
                 groupBox.get(i).setPosition(reel.get(Size).groupBox.get(i).x, reel.get(Size).groupBox.get(i).y);
@@ -302,25 +310,26 @@ public class World {
 
             mark++;
             moves++;
+            pushes = reel.get(Size).pushes;
             setEmbonated();
             setBoxStatus();
         }
 
     }
 
-    public void setFloors(){
-        ArrayList<Brick> allFloors=allFloors();
-        groupDeathFloor=allDeathSpaces();
+    public void setFloors() {
+        ArrayList<Brick> allFloors = allFloors();
+        groupDeathFloor = allDeathSpaces();
 
-        for (Brick brick:allFloors)
-            groupFloor.add(new Floor(brick.x,brick.y,true));
+        for (Brick brick : allFloors)
+            groupFloor.add(new Floor(brick.x, brick.y, true));
 
-        for (Floor floor:groupFloor)
-            Gdx.app.log("floor.isAlive",""+floor.isAlive);
+        for (Floor floor : groupFloor)
+            Gdx.app.log("floor.isAlive", "" + floor.isAlive);
 
-        for (Floor floor:groupFloor) {
-            if (contain(groupDeathFloor,new Brick(floor.x,floor.y))){
-                floor.isAlive=false;
+        for (Floor floor : groupFloor) {
+            if (contain(groupDeathFloor, new Brick(floor.x, floor.y))) {
+                floor.isAlive = false;
             }
             //floor.isAlive=true;
         }
@@ -456,8 +465,6 @@ public class World {
     //}
 
 
-
-
     public ArrayList<Brick> allDeathSpaces() {
         ArrayList<Brick> deathFloor = new ArrayList<Brick>();
         ArrayList<Brick> allFloors = new ArrayList<Brick>();
@@ -541,11 +548,10 @@ public class World {
     }
 
 
-
-    private int getIndex(Brick brick){
-        int i=0;
-        for(Floor floor1:groupFloor){
-            if(brick.x==floor1.x && brick.y==floor1.y)
+    private int getIndex(Brick brick) {
+        int i = 0;
+        for (Floor floor1 : groupFloor) {
+            if (brick.x == floor1.x && brick.y == floor1.y)
                 return i;
             i++;
         }
@@ -611,9 +617,9 @@ public class World {
         return true;
     }
 
-    public void setBoxStatus(){
-        for (Box box: groupBox)
-            box.isAlive=isAlive(box);
+    public void setBoxStatus() {
+        for (Box box : groupBox)
+            box.isAlive = isAlive(box);
     }
 
 
@@ -653,7 +659,7 @@ public class World {
                 for (Brick brick : groupBrick)
                     if (brick.x == tempBox.x && brick.y == tempBox.y) {
                         guy.push = false;
-                       // System.out.println("CAJA-PARED");
+                        // System.out.println("CAJA-PARED");
                         return -2;
                     }
             }
@@ -703,6 +709,9 @@ public class World {
                 setBoxStatus();
 
                 guy.push = true;
+                System.out.println(pushes);
+                reel.get(reel.size() - 1).pushes = ++pushes;
+
                 moves++;
                 return i;
                 //return 1;
@@ -711,14 +720,22 @@ public class World {
         guy.push = false;
         //System.out.print("MUEVE-GUY\n");
         mark++;
+        //pushes++;
+
         moves++;
         for (int j = reel.size() - 1; j > mark + 1; j--)
             reel.remove(j);
         reel.add(new Reel(guy, groupBox, groupReceptacle, groupBrick));
+        reel.get(reel.size() - 1).pushes = pushes;
         return -1;
     }
 
-    public int getMoves(){
+    public int getMoves() {
         return moves;
     }
+
+    public int getPushes() {
+        return pushes;
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.sokoban.entities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -17,15 +18,24 @@ public class StageEntity extends Actor implements Disposable {
     public StageEntity(int status, String name) {
         this.name = name;
         this.status = status;
-        textureLocked = new Texture(Gdx.files.internal("boxes/close_box.png"));
-        textureUnloked = new Texture(Gdx.files.internal("boxes/open_box.png"));
-        textureCompleted = new Texture(Gdx.files.internal("boxes/complete_box.png"));
+        textureLocked = new Texture(Gdx.files.internal("boxes/box_locked.png"));
+        textureUnloked = new Texture(Gdx.files.internal("boxes/box_open.png"));
+        textureCompleted = new Texture(Gdx.files.internal("boxes/box_open.png"));
         setBounds(0,0,textureLocked.getWidth(),textureLocked.getHeight());
         setStatus(status);
     }
 
+    @Override
+    public float getWidth() {
+        return super.getWidth();
+    }
+
     public int getStatus() {
         return status;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setStatus(int status) {
@@ -56,10 +66,6 @@ public class StageEntity extends Actor implements Disposable {
                 batch.draw(textureCompleted,getX(),getY());
             break;
         }
-        BitmapFont font;
-        font = new BitmapFont();
-        font.getData().setScale(3);
-        font.draw(batch, name, getX()+getWidth()/2, getY()+getHeight()/2);
     }
 
     @Override

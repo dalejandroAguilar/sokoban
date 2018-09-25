@@ -22,26 +22,10 @@ public class FloorEntity extends Actor implements Disposable {
         //debug();
         textureAlive = new Texture(Gdx.files.internal("world/Floor.png"));
         textureDead = new Texture(Gdx.files.internal("world/Dead_Floor.png"));
-        //this.world=world;
         setBounds(PLANK_CONSTANT * floor.x, PLANK_CONSTANT * floor.y, PLANK_CONSTANT, PLANK_CONSTANT);
         setTouchable(Touchable.enabled);
 
-        //addListener(new ClickListener() {
-//
-        //   @Override
-        //   public void clicked(InputEvent event, float x, float y) {
-        //       System.out.println(x+", "+y);
-        //       FloorEntity.this.world.guy.x=floor.x;
-        //       FloorEntity.this.world.guy.y=floor.y;
-        //       event.handle();//the Stage will stop trying to handle this event
-        //   }
-        //});
-        //setDebug(true);
     }
-
-    //public void setIsAlive(boolean isAlive) {
-    //    this.isAlive = isAlive;
-    //}
 
     @Override
     public void draw(Batch batch, float parentAlpha) {

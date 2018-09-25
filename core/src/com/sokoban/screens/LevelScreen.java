@@ -1,176 +1,232 @@
 package com.sokoban.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.sokoban.MainGame;
-import com.sokoban.utils.Graphics;
-import com.sokoban.utils.Shape;
+import com.sokoban.entities.StageEntity;
 
-
-public class LevelScreen extends BaseScreen implements GestureDetector.GestureListener {
-    private ShapeRenderer shapeRenderer;
-    private SpriteBatch batch;
+public class LevelScreen extends BaseScreen {
+    final Table table;
+    boolean isOnAdjusting;
+    boolean isOnDragging;
     private Stage stage;
+    private Stage stageSecondary;
+    Texture textureHome = new Texture(Gdx.files.internal("buttons2/home.png"));
+    Texture texturePath = new Texture(Gdx.files.internal("buttons2/path.png"));
+    TextureAtlas atlas = mainGame.getManager().get("skin3/pack.atlas", TextureAtlas.class);
 
-    public LevelScreen(MainGame mainGame) {
+    public LevelScreen(final MainGame mainGame) {
         super(mainGame);
         stage = new Stage(new FitViewport(1920, 1080));
-        Shape shape = new Shape();
-        stage.addActor(shape);
-        //Gdx.gl.glLineWidth(10);
-        stage.getCamera().position.set(0, 0, 0);
-        Graphics graphics = shape.graphics();
-        drawPath(graphics);
-        shape.addListener(new ClickListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                //System.out.println("asno2");
-                event.handle();//the Stage will stop trying to handle this event
-                return true; //the inputmultiplexer will stop trying to handle this touch
+        stageSecondary = new Stage(new FitViewport(1920, 1080), stage.getBatch());
+        isOnDragging = false;
+
+        Skin skin = new Skin(Gdx.files.internal("skin3/skin.json"), atlas);
+
+        table = new Table(skin);
+        table.setFillParent(true);
+        table.top();
+
+        table.add(new Label(mainGame.getLevelManager().getLevelWorlds()[
+                mainGame.getLevelManager().getIndexWorld()].getName(), skin)).left().bottom().colspan(5).height(300).row();
+        table.add(new Label("SELECT A LEVEL", skin)).colspan(5).height(100).row();
+
+
+        int large = mainGame.getLevelManager().getLevelWorlds()[
+                mainGame.getLevelManager().getIndexWorld()].getLevels().size();
+        final int nCol = large / 5;
+        for (int i = 0; i < large; i++) {
+            final int indexLevel = i;
+            if (i % 5 == 0)
+                table.row();
+            StageEntity stageEntity;
+            if (i > mainGame.getLevelManager().getCurrentWorldProgress())
+                stageEntity = new StageEntity(StageEntity.LOCKED,
+                        mainGame.getLevelManager().getLevelWorlds()[mainGame.getLevelManager().getIndexWorld()].getLevels().get(i).getName());
+            else {
+                stageEntity = new StageEntity(StageEntity.COMPLETED,
+                        mainGame.getLevelManager().getLevelWorlds()[mainGame.getLevelManager().getIndexWorld()].getLevels().get(i).getName());
+
+                stageEntity.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        if (!isOnDragging) {
+                            mainGame.getLevelManager().setIndexLevel(indexLevel);
+                            //System.out.println(mainGame.getLevelManager().getCurrentLevel()[0]);
+                            mainGame.setScreen(new GameScreen(mainGame));
+                        }
+                    }
+
+                });
             }
+            Table justTable = new Table(skin);
+            justTable.add(stageEntity).row();
+            justTable.add(new Label(stageEntity.getName(), skin));
+            table.add(justTable).pad(10);
+        }
+        table.setPosition(0, 0);
+        System.out.println(table.getRowHeight(2));
+
+        table.addListener(new InputListener() {
+            float xClick;
+            float yClick;
+            float yDragg;
+            float yTableFix;
+
             @Override
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
-                //System.out.println("draa");
+                yDragg = y - yClick + yDragg;
+                if (Math.abs(yDragg) > 200) {
+                    table.setPosition(table.getX(), -yClick + y + table.getY());
+                    //Gdx.app.log("dragg", "" + y);
+
+                    isOnDragging = true;
+                }
+
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                //table.setPosition(x,y);
+                //Gdx.app.log("TouchDown", "touch " + y);
+                yTableFix = table.getY();
+                yDragg = 0;
+                xClick = x;
+                yClick = y;
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                //Gdx.app.log("TouchUp", "" + table.getY());
+                //Gdx.app.log("TouchUp",""+stage.getViewport().getBottomGutterHeight());
+                //table.setPosition(table.getX(),yTableFix+(int)(yDragg/table.getRowHeight(0))*table.getRowHeight(0));
+                //Gdx.app.log("yTableFix", "" + yTableFix + "drag" + yDragg);
+                if (Math.abs(yDragg) > 200)
+                    if (!isOnAdjusting) {
+                        float bannerHeight = table.getRowHeight(0);
+                        float titleHeight = table.getRowHeight(1);
+                        float banner_titleHeight = bannerHeight + titleHeight;
+                        float rowHeight = table.getRowHeight(2);
+
+                        MoveToAction moveToAction = new MoveToAction();
+                        moveToAction.setDuration(0.25f);
+                        moveToAction.setInterpolation(Interpolation.fade);
+                        if (table.getY() < 0)
+                            moveToAction.setPosition(0, 0);
+                        else if (table.getY() > (nCol - 1 + 1) * rowHeight)
+                            moveToAction.setPosition(0, (nCol - 1 + 1) * rowHeight);
+                        else
+                            moveToAction.setPosition(0, yTableFix + (int) (yDragg / rowHeight) * rowHeight);
+                        table.addAction(Actions.sequence(
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isOnAdjusting = true;
+                                    }
+                                }),
+                                moveToAction,
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isOnAdjusting = false;
+                                    }
+                                })
+                        ));
+                    }
+                isOnDragging = false;
             }
         });
 
-        GestureDetector gestureDetector = new GestureDetector(this);
+        Skin skinDefault2 = new Skin(Gdx.files.internal("skin2/uiskin.json"));
 
 
+        ImageButton.ImageButtonStyle imageButtonStyleHome = new ImageButton.ImageButtonStyle(
+                skinDefault2.get(Button.ButtonStyle.class));
+        imageButtonStyleHome.imageUp = new TextureRegionDrawable(new TextureRegion(textureHome));
+        ImageButton imageButtonHome = new ImageButton(imageButtonStyleHome);
+        imageButtonHome.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                mainGame.setScreen(new TitleScreen(mainGame));
+            }
+        });
 
-        Gdx.input.setInputProcessor(gestureDetector);
+        ImageButton.ImageButtonStyle imageButtonStylePath = new ImageButton.ImageButtonStyle(
+                skinDefault2.get(Button.ButtonStyle.class));
+        imageButtonStylePath.imageUp = new TextureRegionDrawable(new TextureRegion(texturePath));
+        ImageButton imageButtonPath = new ImageButton(imageButtonStylePath);
+        imageButtonPath.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                mainGame.setScreen(new StageScreen(mainGame));
+            }
+        });
 
+        Table secondaryTable = new Table(skin);
+        secondaryTable.setFillParent(true);
+
+        secondaryTable.add(imageButtonHome).pad(10).expandX().left();
+        secondaryTable.add(imageButtonPath).pad(10).expandX().right();
+        secondaryTable.bottom();
+
+        stageSecondary.addActor(secondaryTable);
+        stage.addActor(table);
+
+
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(stageSecondary);
+        inputMultiplexer.addProcessor(stage);
+
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
+
 
     @Override
     public void show() {
-        shapeRenderer = new ShapeRenderer();
-        batch = new SpriteBatch();
-        //((OrthographicCamera) stage.getCamera()).zoom = 2.5f;
-
-    }
-
-    @Override
-    public void render(float delta) {
-        //super.render(delta);
-        Gdx.gl.glClearColor(0.f, 1.f, 1.f, 1.f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        //batch.begin();
-        //batch.end();
-//
-        //shapeRenderer.setColor(Color.BLACK);
-        //shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        //shapeRenderer.polyline(getPolyline());
-        //shapeRenderer.end();
-        stage.act(delta);
-        stage.draw();
-       // System.out.println(stage.getWidth());
-    }
-
-    private float[] getPolyline() {
-        float[] vertices = new float[10];
-        vertices[0] = 0;
-        vertices[1] = 100;
-        vertices[2] = 100;
-        vertices[3] = 100;
-        vertices[4] = 200;
-        vertices[5] = 200;
-        vertices[6] = 300;
-        vertices[7] = 300;
-        vertices[8] = 400;
-        vertices[9] = 400;
-        return vertices;
-    }
-
-    private void drawPath(Graphics graphics) {
-        float screenWidth = stage.getWidth();
-        float screenHeight = stage.getHeight();
-        int padding = 20;
-        float size = screenWidth / 8;
-        int numberOfLevels = 6;
-
-        graphics.setColor(Color.DARK_GRAY);
-        graphics.lineWidth(5);
-        graphics.beginLine();
-
-        graphics.line(-screenWidth / 2 + padding, 0, -screenWidth / 2 + padding + size, 0);
-        for (int i = 0; i < numberOfLevels - 1; i++) {
-            switch (i % 4) {
-                case 0:
-                    graphics.line(-screenWidth / 2 + padding + size * (i + 1), 0, -screenWidth / 2 + padding + size * (i + 2), screenHeight / 2 - padding);
-                    break;
-                case 1:
-                    graphics.line(-screenWidth / 2 + padding + size * (i + 1), screenHeight / 2 - padding, -screenWidth / 2 + padding + size * (i + 2), 0);
-                    break;
-                case 2:
-                    graphics.line(-screenWidth / 2 + padding + size * (i + 1), 0, -screenWidth / 2 + padding + size * (i + 2), -screenHeight / 2 + padding);
-                    break;
-                case 3:
-                    graphics.line(-screenWidth / 2 + padding + size * (i + 1), -screenHeight / 2 + padding, -screenWidth / 2 + padding + size * (i + 2), 0);
-                    break;
-            }
-        }
-        graphics.end();
+        super.show();
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
         stage.getViewport().update(width, height);
+        stageSecondary.getViewport().update(width, height);
     }
 
     @Override
-    public boolean touchDown(float x, float y, int pointer, int button) {
-        return false;
+    public void render(float delta) {
+        Gdx.gl.glClearColor(0.f, 1.f, 0.5f, 1.f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stage.act(delta);
+        stage.draw();
+        stageSecondary.act(delta);
+        stageSecondary.draw();
     }
 
     @Override
-    public boolean tap(float x, float y, int count, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean longPress(float x, float y) {
-        return false;
-    }
-
-    @Override
-    public boolean fling(float velocityX, float velocityY, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean pan(float x, float y, float deltaX, float deltaY) {
-        stage.getCamera().translate(-deltaX,0,0);
-        return true;
-    }
-
-    @Override
-    public boolean panStop(float x, float y, int pointer, int button) {
-        return true;
-    }
-
-    @Override
-    public boolean zoom(float initialDistance, float distance) {
-        return false;
-    }
-
-    @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-        return false;
-    }
-
-    @Override
-    public void pinchStop() {
-
+    public void dispose() {
+        textureHome.dispose();
+        texturePath.dispose();
+        atlas.dispose();
     }
 }
