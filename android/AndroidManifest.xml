@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sokoban" >
 
-    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="27" />
+    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="22" />
 
     <application
         android:allowBackup="true"
