@@ -1,7 +1,6 @@
 package com.sokoban.sokobanWorld;
 
 import com.badlogic.gdx.Gdx;
-import com.sokoban.Constants;
 
 import java.util.ArrayList;
 import java.util.Stack;

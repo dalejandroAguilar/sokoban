@@ -9,8 +9,6 @@ import com.badlogic.gdx.utils.Disposable;
 import com.sokoban.sokobanWorld.Floor;
 import com.sokoban.sokobanWorld.World;
 
-import static com.sokoban.Constants.PLANK_CONSTANT;
-
 public class FloorEntity extends Actor implements Disposable {
     public Floor floor;
     private Texture textureAlive;
@@ -22,7 +20,7 @@ public class FloorEntity extends Actor implements Disposable {
         //debug();
         textureAlive = new Texture(Gdx.files.internal("world/Floor.png"));
         textureDead = new Texture(Gdx.files.internal("world/Dead_Floor.png"));
-        setBounds(PLANK_CONSTANT * floor.x, PLANK_CONSTANT * floor.y, PLANK_CONSTANT, PLANK_CONSTANT);
+        setBounds(com.sokoban.Constants.PLANK_CONSTANT * floor.x, com.sokoban.Constants.PLANK_CONSTANT * floor.y, com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT);
         setTouchable(Touchable.enabled);
 
     }

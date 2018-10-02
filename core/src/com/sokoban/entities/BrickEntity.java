@@ -7,15 +7,13 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Disposable;
 import com.sokoban.sokobanWorld.Brick;
 
-import static com.sokoban.Constants.PLANK_CONSTANT;
-
 public class BrickEntity extends Actor implements Disposable {
 
     private Texture texture;
 
     public BrickEntity(Brick brick) {
         texture = new Texture(Gdx.files.internal("world/Brick.png"));
-        setBounds(brick.x * PLANK_CONSTANT, brick.y * PLANK_CONSTANT, PLANK_CONSTANT, PLANK_CONSTANT);
+        setBounds(brick.x * com.sokoban.Constants.PLANK_CONSTANT, brick.y * com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT);
     }
 
     @Override

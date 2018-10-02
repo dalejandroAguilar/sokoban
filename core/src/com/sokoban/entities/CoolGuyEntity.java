@@ -8,12 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Disposable;
 import com.sokoban.sokobanWorld.Guy;
 
-import static com.sokoban.Constants.BACK;
-import static com.sokoban.Constants.FRONT;
-import static com.sokoban.Constants.LEFT;
-import static com.sokoban.Constants.PLANK_CONSTANT;
-import static com.sokoban.Constants.RIGHT;
-
 public class CoolGuyEntity extends Actor implements Disposable {
     public Guy guy;
     Texture[] IDLEFrames;
@@ -94,10 +88,8 @@ public class CoolGuyEntity extends Actor implements Disposable {
         animationWalkBack = new Animation(.1f, walkBackFrames);
         animationWalkSide = new Animation(.10f, walkSideFrames);
 
-        setBounds(guy.x * PLANK_CONSTANT, guy.y * PLANK_CONSTANT, PLANK_CONSTANT, PLANK_CONSTANT);
+        setBounds(guy.x * com.sokoban.Constants.PLANK_CONSTANT, guy.y * com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT);
         //addAction(Actions.moveTo(1,2,3));
-
-        System.out.println("asno");
 
 
     }
@@ -112,18 +104,18 @@ public class CoolGuyEntity extends Actor implements Disposable {
         if (isWalking) {
             if (isPushing)
                 switch (direction) {
-                    case FRONT:
+                    case com.sokoban.Constants.FRONT:
                         animation = animationWalkFront;
                         break;
-                    case BACK:
+                    case com.sokoban.Constants.BACK:
                         animation = animationWalkBack;
                         break;
-                    case LEFT:
+                    case com.sokoban.Constants.LEFT:
                         animation = animationPushLeft;
                         amountX = amountX - 100;
                         //  animation.getKeyFrame(elapsedTime).
                         break;
-                    case RIGHT:
+                    case com.sokoban.Constants.RIGHT:
                         animation = animationPushLeft;
                         amountX = amountX + 20;
                         flipX = true;
@@ -132,32 +124,32 @@ public class CoolGuyEntity extends Actor implements Disposable {
                 }
             else
                 switch (direction) {
-                    case FRONT:
+                    case com.sokoban.Constants.FRONT:
                         animation = animationWalkFront;
                         break;
-                    case BACK:
+                    case com.sokoban.Constants.BACK:
                         animation = animationWalkBack;
                         break;
-                    case LEFT:
+                    case com.sokoban.Constants.LEFT:
                         animation = animationWalkSide;
                         break;
-                    case RIGHT:
+                    case com.sokoban.Constants.RIGHT:
                         animation = animationWalkSide;
                         flipX = true;
                         break;
                 }
         } else
             switch (direction) {
-                case FRONT:
+                case com.sokoban.Constants.FRONT:
                     animation = animationIDLE;
                     break;
-                case BACK:
+                case com.sokoban.Constants.BACK:
                     animation = animationIdleBack;
                     break;
-                case LEFT:
+                case com.sokoban.Constants.LEFT:
                     animation = animationIdleSide;
                     break;
-                case RIGHT:
+                case com.sokoban.Constants.RIGHT:
                     animation = animationIdleSide;
                     flipX = true;
                     break;

@@ -1,16 +1,10 @@
 package com.sokoban.entities;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-//import com.sokoban.Constants;
+//import Constants;
 import com.sokoban.sokobanWorld.Guy;
-
-import static com.sokoban.Constants.*;
 
 public class GuyEntity extends Actor {
     private Texture texture[][];

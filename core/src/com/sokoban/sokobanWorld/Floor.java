@@ -1,6 +1,6 @@
 package com.sokoban.sokobanWorld;
 
-public class Floor extends Brick{
+public class Floor extends Brick {
     public boolean isAlive;
     public Floor (int x, int y, boolean isAlive){
         super(x,y);

@@ -30,15 +30,15 @@ import com.sokoban.entities.BoxEntity;
 import com.sokoban.entities.BrickEntity;
 import com.sokoban.entities.CoolGuyEntity;
 import com.sokoban.entities.FloorEntity;
-import com.sokoban.entities.ReceptacleEntity;
 import com.sokoban.sokobanWorld.Box;
 import com.sokoban.sokobanWorld.Brick;
-import com.sokoban.sokobanWorld.Floor;
 import com.sokoban.sokobanWorld.Node;
-import com.sokoban.sokobanWorld.PathFinding;
 import com.sokoban.sokobanWorld.Receptacle;
-import com.sokoban.sokobanWorld.Reel;
 import com.sokoban.sokobanWorld.World;
+import com.sokoban.entities.ReceptacleEntity;
+import com.sokoban.sokobanWorld.Floor;
+import com.sokoban.sokobanWorld.PathFinding;
+import com.sokoban.sokobanWorld.Reel;
 
 import java.util.ArrayList;
 

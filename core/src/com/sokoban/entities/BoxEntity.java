@@ -7,8 +7,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Disposable;
 import com.sokoban.sokobanWorld.Box;
 
-import static com.sokoban.Constants.PLANK_CONSTANT;
-
 
 public class BoxEntity extends Actor implements Disposable {
     public Box box;
@@ -20,7 +18,7 @@ public class BoxEntity extends Actor implements Disposable {
         texture[0] = new Texture(Gdx.files.internal("world/Box.png"));
         texture[1] = new Texture(Gdx.files.internal("world/Embonated.png"));
         texture[2] = new Texture(Gdx.files.internal("world/Box_Dead.png"));
-        setBounds(box.x * PLANK_CONSTANT, box.y * PLANK_CONSTANT, PLANK_CONSTANT, PLANK_CONSTANT);
+        setBounds(box.x * com.sokoban.Constants.PLANK_CONSTANT, box.y * com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT, com.sokoban.Constants.PLANK_CONSTANT);
     }
 
     @Override
